@@ -2,8 +2,9 @@
   "name": "auction-peak",
   "version": "1.0.0",
   "description": "backend REST api for next gen auction API",
-  "main": "index.js",
+  "main": "App.js",
   "scripts": {
+    "start":"node --env-file=.env App.js ",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
