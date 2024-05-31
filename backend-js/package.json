@@ -4,13 +4,16 @@
   "description": "backend REST api for next gen auction API",
   "main": "App.js",
   "scripts": {
-    "start":"node --env-file=.env App.js ",
+    "start": "node --env-file=.env App.js ",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
     "express": "^4.19.2",
-    "sequelize": "^6.37.3"
+    "pg": "^8.11.5",
+    "sequelize": "^6.6.2"
+  },
+  "devDependencies": {
   }
 }
