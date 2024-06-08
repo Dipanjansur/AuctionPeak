@@ -1,5 +1,6 @@
 const express = require('express');
 const app = express();
+app.use(express.json())
 const AuctionRouter = require('./Routes/AuctionRouter');
 const UsersRouter = require('./Routes/UsersRouter');
 const ItemsRouter = require('./Routes/ItemsRouter');
@@ -9,6 +10,7 @@ const Users = require('./models/Users');
 const Items = require('./models/Items');
 const Bids = require("./models/Bids");
 const { Auction, AuctionParticipants, AuctionItems } = require('./models/Auctions');
+const BidsRouter = require('./Routes/BidsRouter');
 const port = process.env.PORT || 7070;
 app.get('/health-check', (req, res) => {
   res.send('Server is healty')
@@ -18,6 +20,7 @@ app.use('/users', UsersRouter)
 app.use('/auction', AuctionRouter)
 app.use('/items', ItemsRouter)
 app.use('/statics', StaticPageRouter)
+app.use('/bids', BidsRouter)
 //Global error handler
 app.use((err, req, res, next) => {
   console.error(err.stack)
@@ -31,7 +34,7 @@ app.listen(port, async () => {
       console.log(`something wrong in database connection ${err}`)
     })
   sequelize
-    .sync({ force: true, logging: console.log })
+    .sync({ force: false, logging: console.log })
     .then((result) => {
       console.log("All the models are synced")
     }).catch((err) => {
