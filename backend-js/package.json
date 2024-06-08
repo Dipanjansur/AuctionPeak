@@ -11,9 +11,8 @@
   "license": "ISC",
   "dependencies": {
     "express": "^4.19.2",
+    "jsonwebtoken": "^9.0.2",
     "pg": "^8.11.5",
     "sequelize": "^6.6.2"
-  },
-  "devDependencies": {
   }
 }
