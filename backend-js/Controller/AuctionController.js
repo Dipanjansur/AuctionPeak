@@ -2,13 +2,14 @@ const { Auction } = require("../models/Auctions");
 const { v4: uuidv4 } = require('uuid');
 const getAllAuctions = async (req, res) => {
   try {
-    const retrievedAuction = await Auction.findAll();
+    const retrievedAuction = await Auction.findAll({});
     if (retrievedAuction == null) {
       return res.status(400).json({ message: "no entity found" })
     }
     return res.status(200).json({ message: retrievedAuction })
   }
   catch (err) {
+    console.log(err);
     return res.status(500).json({ message: "something went wrong" })
   }
 }
@@ -21,12 +22,13 @@ const getAuctionById = async (req, res) => {
         AuctionId: auctionId,
       },
     });
-    if (retrievedAuction = null) {
+    if (retrievedAuction == null) {
       return res.status(400).json({ message: "no entity found" })
     }
     return res.status(200).json({ message: retrievedAuction });
   }
   catch (err) {
+    console.log(err);
     return res.status(500).json({ message: "something went wrong" })
   }
 }
@@ -34,7 +36,7 @@ const getAuctionById = async (req, res) => {
 const createNewAuction = async (req, res) => {
   const newAuction = req.body
   try {
-    const createdAuction = await Auction.create({ AuctionId: uuidv4(), name: newAuction.name });
+    const createdAuction = await Auction.create({ AuctionId: uuidv4(), name: newAuction.name, startTime: newAuction.startTime, endTime: newAuction.endTime });
     return res.status(200).json({ message: `Creating a new auction with Id, ${createdAuction.AuctionId}` });
   }
   catch (err) {
@@ -46,13 +48,14 @@ const createNewAuction = async (req, res) => {
 const updateAuctionData = async (req, res) => {
   const { auctionId } = req.params
   const auction = req.body
+  console.log(auction)
   try {
-    const Retrivedauction = await Auction.findAll({
+    const Retrivedauction = await Auction.findOne({
       where: {
         AuctionId: auctionId,
       },
     });
-    if (Retrivedauction = null) {
+    if (Retrivedauction == null) {
       return res.status(400).json({ message: "no entity found with that Id" })
     }
     if ((auction.name == auction.startTime == auction.endTime == null) || ((Retrivedauction.name == auction.name && Retrivedauction.startTime == auction.startTime) && Retrivedauction.endTime == auction.endTime)) {
@@ -61,7 +64,7 @@ const updateAuctionData = async (req, res) => {
     (auction.name != null) && (Retrivedauction.name = auction.name);
     (auction.startTime != null) && (Retrivedauction.startTime = auction.startTime);
     (auction.endTime != null) && (Retrivedauction.endTime = auction.endTime);
-    await Retrivedauction.save()
+    await Retrivedauction.save();
     return res.status(200).json({ message: Retrivedauction });
   }
   catch (err) {
@@ -73,15 +76,16 @@ const updateAuctionData = async (req, res) => {
 const deleteAuction = async (req, res) => {
   const { auctionId } = req.params
   try {
-    const Retrivedauction = await Auction.findAll({
+    const Retrivedauction = await Auction.destroy({
       where: {
         AuctionId: auctionId,
       },
     });
-    if (!Retrivedauction) {
-      await Retrivedauction.destroy();
+    if (Retrivedauction == 1) {
+      return res.status(200).json({ message: "sucessfultty deleted" });
+    } else {
+      return res.status(400).json({ message: "no entity found or already deleted" });
     }
-    return res.status(200).json({ message: Retrivedauction });
   }
   catch (err) {
     console.log("something unexpected" + err);
