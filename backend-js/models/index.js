@@ -1,8 +1,13 @@
 const Sequelize = require("sequelize");
+const POSTGRES_USER = process.env.POSTGRES_USER || "postgres";
+const POSTGRES_PASSWORD = process.env.POSTGRES_PASSWORD || "qwert";
+const POSTGRES_HOST = process.env.POSTGRES_HOST || "127.0.0.1:5432";
+const POSTGRES_DB = process.env.POSTGRES_DB || "AuctionPeak";
+
 // In a real app, you should keep the database connection URL as an environment variable.
 // But for this example, we will just use a local SQLite database.
 // const sequelize = new Sequelize(process.env.DB_CONNECTION_URL);
-const sequelize = new Sequelize('postgres://postgres:qwert@127.0.0.1:5432/AuctionPeak', {
+const sequelize = new Sequelize(`postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}/${POSTGRES_DB}`, {
   dialect: "postgres",
   host: "localhost",
   // logQueryParameters: true,
