@@ -3,6 +3,12 @@ const sequelize = require("./index");
 const Items = require("./Items");
 
 const Users = sequelize.define('users', {
+  usersId: {
+    type: DataTypes.UUID,
+    defaultValue: DataTypes.UUIDV4,  // Automatically generate UUIDs
+    allowNull: false,
+    primaryKey: true,
+  },
   // Model attributes are defined here
   firstName: {
     type: DataTypes.STRING,
