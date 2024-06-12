@@ -9,6 +9,10 @@ const Users = sequelize.define('users', {
     allowNull: false,
     primaryKey: true,
   },
+  // username:{
+  //   type: DataTypes.STRING,
+  //   allowNull: false,
+  // },
   // Model attributes are defined here
   firstName: {
     type: DataTypes.STRING,
@@ -41,7 +45,7 @@ const Users = sequelize.define('users', {
   }
 },
 );
-Users.hasMany(Items, { foreignKey: 'ItmesId', onDelete: 'CASCADE' })
-Items.belongsTo(Users, { foreignKey: 'userId', onDelete: 'CASCADE' })
+// Users.hasMany(Items, { foreignKey: 'OwnedItems', onDelete: 'CASCADE' })
+Items.belongsTo(Users, { foreignKey: 'Owner', onDelete: 'CASCADE' })
 
 module.exports = Users;

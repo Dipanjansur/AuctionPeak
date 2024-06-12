@@ -1,27 +1,93 @@
-const getAllItems = (req, res) => {
-  res.status(200).json({ message: "Fetching all Items" });
+const Items = require("../models/Items");
+const { v4: uuidv4 } = require('uuid');
+
+const getAllItems = async (req, res) => {
+  try {
+    const retrievedItem = await Items.findAll();
+    if (retrievedItem == null) {
+      return res.status(400).json({ message: "no entity found" })
+    }
+    return res.status(200).json({ message: retrievedItem })
+  }
+  catch (err) {
+    return res.status(500).json({ message: "something went wrong" })
+  }
 }
 
-const getItemById = (req, res) => {
+const getItemById = async (req, res) => {
   const { ItemId } = req.params;
-  res.status(200).json({ message: `Fetching Items with ID: ${ItemId}` });
+  try {
+    const retrievedItem = await Bids.findOne({
+      where: {
+        ItemId: ItemId,
+      },
+    });
+    if (retrievedItem == null) {
+      return res.status(400).json({ message: "no entity found" })
+    }
+    return res.status(200).json({ message: retrievedItem });
+  }
+  catch (err) {
+    return res.status(500).json({ message: "something went wrong" })
+  }
 }
 
-const createNewItem = (req, res) => {
-  // Assuming you will process and validate Items data here
-  res.status(201).json({ message: "Creating a new Items" });
+const createNewItem = async (req, res) => {
+  const newItem = req.body
+  try {
+    const createdItems = await Items.create({ ItemId: uuidv4(), ItemName: newItem.ItemName, Bio: newItem.Bio, Status: newItem.Status, ItemDescription: newItem.ItemDescription, CurrentPrice: newItem.CurrentPrice });
+    return res.status(201).json({ message: `New Item Created, ${createdItems.ItemId}` });
+  }
+  catch (err) {
+    console.log("something unexpected" + err);
+    res.status(500).json({ message: "Something Went Wrong" });
+  }
 }
 
-const updateItemData = (req, res) => {
+const updateItemData = async (req, res) => {
   const { ItemId } = req.params;
-  // Assuming you will process and validate Items update data here
-  res.status(200).json({ message: `Updating Items with ID: ${ItemId}` });
+  const updatedItem = req.body;
+  try {
+    const RetrivedItem = await Items.findOne({
+      where: {
+        ItemId: ItemId,
+      },
+    });
+    if (RetrivedItem == null) {
+      return res.status(400).json({ message: "no entity found with that Id" })
+    }
+    if ((updatedItem.CurrentPrice == null) || (RetrivedItem.CurrentPrice == updatedItem.CurrentPrice)) {
+      return res.status(404).json({ message: "please check the request parameters.Not a valid request" })
+    }
+    (updatedItem.ItemName != null) && (RetrivedItem.ItemName = updatedItem.ItemName);
+    (updatedItem.startTime != null) && (RetrivedItem.startTime = updatedItem.startTime);
+    (updatedItem.endTime != null) && (RetrivedItem.endTime = updatedItem.endTime);
+    await RetrivedItem.save()
+    return res.status(200).json({ message: RetrivedItem });
+  }
+  catch (err) {
+    console.log("something unexpected" + err);
+    res.status(500).json({ message: "Something Went Wrong" });
+  }
 }
 
-const deleteItem = (req, res) => {
+const deleteItem = async (req, res) => {
   const { ItemId } = req.params;
-  // Assuming you will handle Items deletion here
-  res.status(200).json({ message: `Deleting Items with ID: ${ItemId}` });
+  try {
+    const RetrivedItem = await Auction.destroy({
+      where: {
+        ItemId: ItemId,
+      },
+    });
+    if (RetrivedItem == 1) {
+      return res.status(200).json({ message: "sucessfully deleted" });
+    } else {
+      return res.status(200).json({ message: RetrivedItem });
+    }
+  }
+  catch (err) {
+    res.status(500).json({ message: "Something Went Wrong" });
+  }
 }
 module.exports = {
   getAllItems, getItemById, createNewItem, updateItemData, deleteItem

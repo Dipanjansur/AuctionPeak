@@ -5,7 +5,7 @@ const Users = require('./Users');
 const Items = sequelize.define(
   'items',
   {
-    ItemsId: {
+    ItemId: {
       type: DataTypes.UUID,
       defaultValue: DataTypes.UUIDV4,  // Automatically generate UUIDs
       allowNull: false,
@@ -25,10 +25,7 @@ const Items = sequelize.define(
       allowNull: false,
     },
     //TODO: fix it
-    Owner: {
-      type: DataTypes.STRING,
-    },
-    bio: {
+    Bio: {
       type: DataTypes.TEXT('medium')
     },
     Status: {
