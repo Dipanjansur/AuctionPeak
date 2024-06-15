@@ -28,5 +28,13 @@ const logger = createLogger({
   ]
 });
 
-module.exports = logger
+const Logging = (level, Entity, Events, message) => {
+  logger.log({
+    level: level,
+    Entity: Entity,
+    Events: Events,
+    message: message,
+  });
+}
+module.exports = Logging
 
