@@ -4,17 +4,25 @@ const User = require("./Users");
 const Items = require("./Items");
 const Bids = require("./Bids");
 
-const Auction = sequelize.define('Auction', {
+const Auction = sequelize.define('auction', {
+  AuctionId: {
+    type: DataTypes.UUID,
+    defaultValue: DataTypes.UUIDV4,  // Automatically generate UUIDs
+    allowNull: false,
+    primaryKey: true,
+  },
   name: {
     type: DataTypes.STRING,
     allowNull: false
   },
   startTime: {
     type: DataTypes.DATE,
+    defaultValue: DataTypes.NOW,
     allowNull: false
   },
   endTime: {
     type: DataTypes.DATE,
+    defaultValue: DataTypes.NOW,
     allowNull: false
   }
 }, {

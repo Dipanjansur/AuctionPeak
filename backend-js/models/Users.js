@@ -1,9 +1,19 @@
 const { DataTypes } = require("sequelize");
 const sequelize = require("./index");
 const Items = require("./Items");
+const Role = require("./Roles");
 
 const Users = sequelize.define('users', {
-  // Model attributes are defined here
+  usersId: {
+    type: DataTypes.UUID,
+    defaultValue: DataTypes.UUIDV4,  // Automatically generate UUIDs
+    allowNull: false,
+    primaryKey: true,
+  },
+  username: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
   firstName: {
     type: DataTypes.STRING,
     allowNull: false,
@@ -35,7 +45,8 @@ const Users = sequelize.define('users', {
   }
 },
 );
-Users.hasMany(Items, { foreignKey: 'ItmesId', onDelete: 'CASCADE' })
-Items.belongsTo(Users, { foreignKey: 'userId', onDelete: 'CASCADE' })
-
+// Users.hasMany(Items, { foreignKey: 'OwnedItems', onDelete: 'CASCADE' })
+Items.belongsTo(Users, { foreignKey: 'Owner', onDelete: 'CASCADE' })
+Users.belongsTo(Role);
+Role.hasMany(Users);
 module.exports = Users;

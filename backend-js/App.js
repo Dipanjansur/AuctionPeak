@@ -1,5 +1,6 @@
 const express = require('express');
 const app = express();
+app.use(express.json())
 const AuctionRouter = require('./Routes/AuctionRouter');
 const UsersRouter = require('./Routes/UsersRouter');
 const ItemsRouter = require('./Routes/ItemsRouter');
@@ -9,6 +10,17 @@ const Users = require('./models/Users');
 const Items = require('./models/Items');
 const Bids = require("./models/Bids");
 const { Auction, AuctionParticipants, AuctionItems } = require('./models/Auctions');
+const BidsRouter = require('./Routes/BidsRouter');
+const Role = require('./models/Roles');
+const logger = require('./utils/Logger');
+const morgan = require("morgan");
+const Logging = require('./utils/Logger');
+const { Events, Logging_level, Entity } = require('./utils/LoggerParams');
+morgan.token('body', (req, res) => JSON.stringify(req.body));
+const morganFormat = ':method :url :status :response-time ms - :body - :req[body] - :req[content-length] - :res[content-length] - :res[body]';
+
+app.use(morgan(morganFormat));
+
 const port = process.env.PORT || 7070;
 app.get('/health-check', (req, res) => {
   res.send('Server is healty')
@@ -18,24 +30,28 @@ app.use('/users', UsersRouter)
 app.use('/auction', AuctionRouter)
 app.use('/items', ItemsRouter)
 app.use('/statics', StaticPageRouter)
+app.use('/bids', BidsRouter)
 //Global error handler
 app.use((err, req, res, next) => {
   console.error(err.stack)
   res.status(500).send('Something bad happened!')
 })
+
+
 app.listen(port, async () => {
   sequelize.authenticate()
     .then(() => {
-      console.log(`The database is connected`)
+      Logging(Logging_level.info, Entity.Database, Events.CONNECTION, "database connection is sucessfullly")
     }).catch((err) => {
-      console.log(`something wrong in database connection ${err}`)
+      Logging(Logging_level.error, Entity.Database, Events.CONNECTION, `database connection is failed ${err}`)
+
     })
   sequelize
-    .sync({ force: true, logging: console.log })
+    .sync({ force: false, logging: console.log })
     .then((result) => {
-      console.log("All the models are synced")
+      Logging(Logging_level.info, Entity.Database, Events.CONNECTION, "database all the models are synced")
     }).catch((err) => {
-      console.log(`something wrong in models sync ${err}`)
+      Logging(Logging_level.error, Entity.Database, Events.CONNECTION, `database models syncing failed ${err}`)
     })
-  console.log(`server is running at ${port}`)
+  Logging(Logging_level.info, Entity.SERVER, Events.SERVER_ACTIVITIES, `server is running at ${port}`)
 })
