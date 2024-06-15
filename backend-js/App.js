@@ -15,7 +15,7 @@ const Role = require('./models/Roles');
 const logger = require('./utils/Logger');
 const morgan = require("morgan");
 const Logging = require('./utils/Logger');
-const { Events, Logging_level, Entity } = require('./utils/LoggerParams');
+const { Events, Logging_level, Entity } = require('./utils/LoggerParams.js');
 morgan.token('body', (req, res) => JSON.stringify(req.body));
 const morganFormat = ':method :url :status :response-time ms - :body - :req[body] - :req[content-length] - :res[content-length] - :res[body]';
 

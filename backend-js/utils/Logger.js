@@ -1,5 +1,6 @@
 const { createLogger, format, transports } = require('winston');
 const { combine, timestamp, json, colorize, errors, splat } = format;
+const { Logging_level, Entity, Events, Models } = require("../utils/LoggerParams");
 
 // Custom format for console logging with colors
 const consoleLogFormat = format.combine(
@@ -28,13 +29,26 @@ const logger = createLogger({
   ]
 });
 
-const Logging = (level, Entity, Events, message) => {
-  logger.log({
-    level: level,
-    Entity: Entity,
-    Events: Events,
-    message: message,
-  });
+function Logging(Logging_level, Entity, Events, message) {
+  if (Models) {
+    console.log("**************************************", Logging_level, Entity, Events, Models, message);
+    logger.log({
+      level: Logging_level,
+      Entity: Entity,
+      Events: Events,
+      message: message,
+      models: Models
+    });
+  } else {
+    console.log("+++++++++++++++++++++++++++++++++++++", Logging_level, Entity, Events, message);
+    logger.log({
+      level: Logging_level,
+      Entity: Entity,
+      Events: Events,
+      message: message
+    });
+  }
 }
+
 module.exports = Logging
 
