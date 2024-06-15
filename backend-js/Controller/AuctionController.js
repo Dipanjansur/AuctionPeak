@@ -1,3 +1,4 @@
+const { scoped } = require("../middleware/PermisssionManager");
 const { Auction } = require("../models/Auctions");
 const { v4: uuidv4 } = require('uuid');
 const getAllAuctions = async (req, res) => {
@@ -6,7 +7,7 @@ const getAllAuctions = async (req, res) => {
     if (retrievedAuction == null) {
       return res.status(400).json({ message: "no entity found" })
     }
-    return res.status(200).json({ message: retrievedAuction })
+    return res.status(200).json(retrievedAuction)
   }
   catch (err) {
     console.log(err);

@@ -1,6 +1,7 @@
 const { DataTypes } = require("sequelize");
 const sequelize = require("./index");
 const Items = require("./Items");
+const Role = require("./Roles");
 
 const Users = sequelize.define('users', {
   usersId: {
@@ -9,11 +10,10 @@ const Users = sequelize.define('users', {
     allowNull: false,
     primaryKey: true,
   },
-  // username:{
-  //   type: DataTypes.STRING,
-  //   allowNull: false,
-  // },
-  // Model attributes are defined here
+  username: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
   firstName: {
     type: DataTypes.STRING,
     allowNull: false,
@@ -47,5 +47,6 @@ const Users = sequelize.define('users', {
 );
 // Users.hasMany(Items, { foreignKey: 'OwnedItems', onDelete: 'CASCADE' })
 Items.belongsTo(Users, { foreignKey: 'Owner', onDelete: 'CASCADE' })
-
+Users.belongsTo(Role);
+Role.hasMany(Users);
 module.exports = Users;

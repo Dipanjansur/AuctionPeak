@@ -24,7 +24,6 @@ const Items = sequelize.define(
       type: DataTypes.DOUBLE,
       allowNull: false,
     },
-    //TODO: fix it
     Bio: {
       type: DataTypes.TEXT('medium')
     },

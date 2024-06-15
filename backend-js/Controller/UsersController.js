@@ -1,6 +1,7 @@
 const Users = require("../models/Users");
 const bcrypt = require('bcryptjs');
 const { v4: uuidv4 } = require('uuid');
+const { generateAuthToken } = require("../utils/JwtHelper");
 
 const signInUser = async (req, res) => {
   const { username, password, firstName, lastname, email } = req.body;
@@ -17,8 +18,8 @@ const signInUser = async (req, res) => {
       email,
       password: hashedPassword
     });
-
-    res.status(201).json({ message: "User created successfully", userId: newUser.usersId });
+    const jwttoken = generateAuthToken(newUser);
+    res.status(201).json({ message: "User created successfully", userId: newUser.usersId, jwt: jwttoken });
   } catch (error) {
     res.status(500).json({ message: "Error creating user", error: error.message });
   }
@@ -43,8 +44,8 @@ const loginUser = async (req, res) => {
     if (!isMatch) {
       return res.status(400).json({ message: "Invalid password" });
     }
-
-    res.status(200).json({ message: "Login successful", userId: user.userId });
+    const jwttoken = generateAuthToken(user);
+    res.status(201).json({ message: "Login Information working", userId: user.usersId, jwt: jwttoken });
   } catch (error) {
     res.status(500).json({ message: "Error logging in", error: error.message });
   }

@@ -11,6 +11,29 @@ const Items = require('./models/Items');
 const Bids = require("./models/Bids");
 const { Auction, AuctionParticipants, AuctionItems } = require('./models/Auctions');
 const BidsRouter = require('./Routes/BidsRouter');
+const Role = require('./models/Roles');
+// const logger = require('./utils/Logger');
+// const morgan = require("morgan")
+// const morganFormat = ':method :url :status :response-time ms';
+
+// app.use(morgan(morganFormat,
+//   {
+//     stream: {
+//       write: (message) => {
+//         const logObject = {
+//           //   method: message.split(' ')[0],
+//           //   url: message.split(' ')[1],
+//           //   status: message.split(' ')[2],
+//           //   responseTime: message.split(' ')[3],
+
+//           // };
+//           // logger.info(JSON.stringify(logObject));
+//         }
+//       }
+//     }
+//   }
+// ));
+
 const port = process.env.PORT || 7070;
 app.get('/health-check', (req, res) => {
   res.send('Server is healty')
