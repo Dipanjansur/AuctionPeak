@@ -2,6 +2,7 @@ const Users = require("../models/Users");
 const bcrypt = require('bcryptjs');
 const { v4: uuidv4 } = require('uuid');
 const { generateAuthToken } = require("../utils/JwtHelper");
+const { Logging_level, Entity, Events, Models } = require("../utils/LoggerParams");
 
 const signInUser = async (req, res) => {
   const { username, password, firstName, lastname, email } = req.body;
@@ -61,11 +62,14 @@ const getUsersById = async (req, res) => {
       },
     });
     if (retrievedUser == null) {
+      Logging(Logging_level.warn, Entity.Controller, Events.READ_OP, Models.Items, "no entity found getItemById")
       return res.status(400).json({ message: "no entity found" })
     }
+    Logging(Logging_level.info, Entity.Controller, Events.READ_OP, Models.Items, ` got data getItemById${retrievedItem}`)
     return res.status(200).json({ message: retrievedUser });
   }
   catch (err) {
+    Logging(Logging_level.error, Entity.Controller, Events.READ_OP, Models.Items, `something went wrong in getItemById${err}`)
     return res.status(500).json({ message: "something went wrong" })
   }
 }
@@ -74,11 +78,14 @@ const getAllUsers = async (req, res) => {
   try {
     const retrievedUser = await Users.findAll();
     if (retrievedUser == null) {
+      Logging(Logging_level.warn, Entity.Controller, Events.READ_OP, Models.Items, "no entity found getAllItems")
       return res.status(400).json({ message: "no entity found" })
     }
+    Logging(Logging_level.info, Entity.Controller, Events.READ_OP, Models.Items, ` got data getAllItems${retrievedAuction}`)
     return res.status(200).json({ message: retrievedUser })
   }
   catch (err) {
+    Logging(Logging_level.error, Entity.Controller, Events.READ_OP, Models.Items, `something went wrong in getAllItems${err}`)
     return res.status(500).json({ message: "something went wrong" })
   }
 }
@@ -98,13 +105,15 @@ const deleteUsers = async (req, res) => {
       },
     });
     if (RetrivedUser == 1) {
+      Logging(Logging_level.info, Entity.Controller, Events.UPDATE_OP, Models.Items, `deleted successfully deleteItem`)
       return res.status(200).json({ message: "sucessfully deleted" });
     } else {
+      Logging(Logging_level.warn, Entity.Controller, Events.UPDATE_OP, Models.Items, "no entity found or already deleted deleteItem")
       return res.status(200).json({ message: RetrivedUser });
     }
   }
   catch (err) {
-    console.log("something unexpected" + err);
+    Logging(Logging_level.error, Entity.Controller, Events.UPDATE_OP, Models.Items, `something unexpected deleteItem ${err}`)
     res.status(500).json({ message: "Something Went Wrong" });
   }
 }

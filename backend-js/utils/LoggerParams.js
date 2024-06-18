@@ -1,3 +1,4 @@
+const { Auction } = require("../models/Auctions");
 
 const Entity = {
   Database: 'Database',
@@ -24,10 +25,13 @@ const Events = {
   UPDATE_OP: 'UPDATE_OP',
   DELETE_OP: 'DELETE_OP',
   Auction: 'Auction',
+  SERVER_ACTIVITIES: 'SERVER_ACTIVITIES'
+};
+const Models = {
+  Auction: 'Auction',
   Bids: 'Bids',
   Items: 'Items',
   Users: 'Users',
   Roles: 'Roles',
-  SERVER_ACTIVITIES: 'SERVER_ACTIVITIES'
-};
-module.exports = { Events, Logging_level, Entity }
+}
+module.exports = { Events, Logging_level, Entity, Models }

@@ -1,6 +1,7 @@
 const jwtKey = process.env.JWT_SECRET_KEY || "l8L0KIpE)ra`*uF?x~'pX36p(3";
 var jwt = require('jsonwebtoken');
 const Users = require("../models/Users");
+const Role = require('../models/Roles');
 
 const isAuthticated = async (req, res, next) => {
   const AuthBearerToken = req.header("Authorization");
@@ -27,6 +28,10 @@ const isAuthticated = async (req, res, next) => {
         error: { message: 'invalid token' },
       });
     req.user = user;
+    const UserRole = await Role.findOne({
+      UserRole: Role.RoleId
+    })
+    req.UserRole = UserRole.name
     next();
   } catch (error) {
     res.status(401).json({ error: 'Invalid token' });
