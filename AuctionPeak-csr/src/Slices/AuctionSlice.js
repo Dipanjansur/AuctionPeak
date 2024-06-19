@@ -1,7 +1,7 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit"
 import axios from "axios"
 
-const InitialState = {
+const initialState = {
   loading: false,
   erros: null,
   Auctions: [],
@@ -23,7 +23,7 @@ export const fetchAuction = createAsyncThunk("auction/fetch", (Id) => {
 
 const AuctionSlice = createSlice({
   name: "auctions",
-  InitialState,
+  initialState,
   extraReducers: builder => {
     builder.addCase(fetchAuctions.pending, (state) => {
       state.loading = true

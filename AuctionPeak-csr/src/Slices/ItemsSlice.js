@@ -8,22 +8,22 @@ const InitialState = {
   Item: {}
 }
 
-export const fetchItems = createAsyncThunk("auctions/fetchAll", () => {
+export const fetchItems = createAsyncThunk("items/fetchAll", () => {
   return axios
-    .get('http://localhost:9090/bids/')
+    .get('http://localhost:9090/items/')
     .then(response => response.data)
 })
 
-export const fetchItem = createAsyncThunk("auctions/fetchAll", (Id) => {
+export const fetchItem = createAsyncThunk("items/fetch", (Id) => {
   return axios
-    .get(`http://localhost:9090/bids?Id=${Id}`)
+    .get(`http://localhost:9090/items?Id=${Id}`)
     .then(response => response.data)
 })
 
 
 const ItemSlice = createSlice({
   name: "auctions",
-  InitialState,
+  initialState: InitialState,
   extraReducers: builder => {
     builder.addCase(fetchItems.pending, (state) => {
       state.loading = true

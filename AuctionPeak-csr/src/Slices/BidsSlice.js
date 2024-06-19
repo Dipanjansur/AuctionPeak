@@ -23,7 +23,7 @@ export const fetchBid = createAsyncThunk("Bid/fetch", (Id) => {
 
 const BidsSlice = createSlice({
   name: "auctions",
-  InitialState,
+  initialState: InitialState,
   extraReducers: builder => {
     builder.addCase(fetchBids.pending, (state) => {
       state.loading = true
