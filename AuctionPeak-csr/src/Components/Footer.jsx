@@ -6,7 +6,7 @@ const Footer = () => {
       <div className="mx-auto max-w-screen-xl px-4 py-16 sm:px-6 lg:px-8">
         <div className="lg:flex lg:items-start lg:gap-8">
           <div className="text-teal-600">
-            <img src={image} alt='mySvgImage' style={{ "max-height": "70px" }} />
+            <img src={image} alt='mySvgImage' style={{ "maxHeight": "70px" }} />
           </div>
           <div className="mt-8 grid grid-cols-5 gap-8 lg:mt-0 lg:grid-cols-5 lg:gap-y-16">
             <div className="col-span-6">

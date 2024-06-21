@@ -1,9 +1,7 @@
-import { useState } from "react";
 import {
   createBrowserRouter,
   RouterProvider,
 } from "react-router-dom";
-import BasicLayout from "./Layout/BasicLayout";
 import LoggedOutLayout from "./Layout/LoggedOutLayout";
 import { HomePage } from "./Pages/HomePage";
 import LoginPage from "./Pages/LoginPage";
@@ -14,12 +12,13 @@ import AboutUs from "./Pages/AboutUs";
 import Pricing from "./Pages/Pricing";
 import Goals from "./Pages/Goals";
 import SignUpPage from "./Pages/SignUpPage";
+import BasicFullScreenLayout from "./Layout/BasicFullScreenLayout";
 //TODO: make this a context state
 const isloggedIn = false
 export const router = createBrowserRouter([
   {
     path: '/',
-    element: isloggedIn ? <BasicLayout /> : < LoggedOutLayout />,
+    element: isloggedIn ? <BasicFullScreenLayout /> : < LoggedOutLayout />,
     children: [
       {
         path: '/',

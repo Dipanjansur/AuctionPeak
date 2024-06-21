@@ -1,16 +1,15 @@
-import { Children } from "react"
 import Footer from "../Components/Footer"
 import Header from "../Components/Header"
 import { Outlet } from "react-router-dom"
 
-const BasicLayout = () => {
+const BasicFullScreenLayout = ({ children }) => {
   return (
     <>
       <Header />
-      <Outlet>{Children}</Outlet>
+      {children}
       <Footer />
     </>
   )
 }
 
-export default BasicLayout
+export default BasicFullScreenLayout

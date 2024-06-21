@@ -7,7 +7,7 @@ const Header = () => {
       <div className="mx-auto flex h-16 max-w-screen-xl items-center gap-8 px-4 sm:px-6 lg:px-8">
         <a className="block text-teal-600" href="#">
           <span className="sr-only">Home</span>
-          <img src={image} alt='mySvgImage' style={{ "max-height": "70px" }} />
+          <img src={image} alt='mySvgImage' style={{ "maxHeight": "70px" }} />
         </a>
 
         <div className="flex flex-1 items-center justify-end md:justify-between">
