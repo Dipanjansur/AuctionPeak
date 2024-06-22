@@ -24,18 +24,10 @@ const Header = () => {
               <li>
                 <a className="text-gray-500 transition hover:text-gray-500/75" href="/bids"> Bids </a>
               </li>
-
-              <li>
-                <a className="text-gray-500 transition hover:text-gray-500/75" href="/aboutus"> AboutUs </a>
-              </li>
-
               <li>
                 <a className="text-gray-500 transition hover:text-gray-500/75" href="/pricing"> Pricing </a>
               </li>
 
-              <li>
-                <a className="text-gray-500 transition hover:text-gray-500/75" href="/goals"> Goals </a>
-              </li>
             </ul>
           </nav>
 
