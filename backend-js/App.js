@@ -1,5 +1,6 @@
 const express = require('express');
 const app = express();
+const cors = require('cors');
 app.use(express.json())
 const AuctionRouter = require('./Routes/AuctionRouter');
 const UsersRouter = require('./Routes/UsersRouter');
@@ -16,11 +17,19 @@ const logger = require('./utils/Logger');
 const morgan = require("morgan");
 const Logging = require('./utils/Logger');
 const { Events, Logging_level, Entity } = require('./utils/LoggerParams');
+//logger config
 morgan.token('body', (req, res) => JSON.stringify(req.body));
 const morganFormat = ':method :url :status :response-time ms - :body - :req[body] - :req[content-length] - :res[content-length] - :res[body]';
-
 app.use(morgan(morganFormat));
+// cors config
+const corsOptions = {
+  origin: 'http://127.0.0.1:5173', // Allow only requests from this origin
+  // methods: 'GET,POST', // Allow only these methods
+  // allowedHeaders: ['Content-Type', 'Authorization'] // Allow only these headers
+};
 
+// Use CORS middleware with specified options
+app.use(cors(corsOptions));
 const port = process.env.PORT || 7070;
 app.get('/health-check', (req, res) => {
   res.send('Server is healty')

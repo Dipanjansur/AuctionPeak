@@ -3,7 +3,6 @@ import GridCardsLayout from "../Layout/GridCardsLayout";
 import HorizentalCardLayout from "../Layout/HorizentalCardLayout";
 import GridAuctionCard from "../Components/GridAuctionCard";
 import HorizentalAuctionCard from "../Components/HorizentalAuctionCard";
-import BasicFullScreenLayout from "../Layout/BasicFullScreenLayout";
 
 const ItemsPage = () => {
   const [layout, setlayout] = useState({ "GridCardsLayout": false, "HorizentalCardLayout": true })
@@ -15,7 +14,7 @@ const ItemsPage = () => {
     }
   }
   return (
-    <BasicFullScreenLayout >
+    <>
       <div className="inline-flex">
         <button className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-l" onClick={() => { buttonClicked("GridCardsLayout") }}>
           GridLayout
@@ -26,7 +25,7 @@ const ItemsPage = () => {
       </div>
       {layout.GridCardsLayout && <GridCardsLayout ><GridAuctionCard /></GridCardsLayout>}
       {layout.HorizentalCardLayout && <HorizentalCardLayout ><HorizentalAuctionCard /></HorizentalCardLayout>}
-    </BasicFullScreenLayout>
+    </>
   );
 }
 

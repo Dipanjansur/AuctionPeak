@@ -1,8 +1,14 @@
-const GridCardsLayout = () => {
+import PropTypes from 'prop-types';
+
+const GridCardsLayout = ({ children }) => {
   return (
-    <div>GridCardsLayout</div>
+    <>
+      {children}
+    </>
   )
 }
-
+GridCardsLayout.propTypes = {
+  children: PropTypes.node,
+}
 export default GridCardsLayout
 

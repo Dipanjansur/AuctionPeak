@@ -15,6 +15,19 @@ const Auction = sequelize.define('auction', {
     type: DataTypes.STRING,
     allowNull: false
   },
+  AuctionDetails: {
+    type: DataTypes.TEXT("medium"),
+    // allowNull defaults to true
+  },
+  isPremium: {
+    type: DataTypes.ENUM('corporate', 'paid', 'verified', 'free tier', 'guest')
+  },
+  profilepic: {
+    type: DataTypes.STRING(100),
+    validate: {
+      isUrl: true
+    }
+  },
   startTime: {
     type: DataTypes.DATE,
     defaultValue: DataTypes.NOW,

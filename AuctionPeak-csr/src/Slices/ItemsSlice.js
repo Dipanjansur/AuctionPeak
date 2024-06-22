@@ -10,13 +10,13 @@ const InitialState = {
 
 export const fetchItems = createAsyncThunk("items/fetchAll", () => {
   return axios
-    .get('http://localhost:9090/items/')
+    .get('http://localhost:8080/items/')
     .then(response => response.data)
 })
 
 export const fetchItem = createAsyncThunk("items/fetch", (Id) => {
   return axios
-    .get(`http://localhost:9090/items?Id=${Id}`)
+    .get(`http://localhost:8080/items?Id=${Id}`)
     .then(response => response.data)
 })
 

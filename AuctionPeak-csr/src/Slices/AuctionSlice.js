@@ -7,16 +7,17 @@ const initialState = {
   Auctions: [],
   Auction: {}
 }
+const AuthHeader = { 'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI0ZTU3ZGZmOS01ZTk2LTRlZjYtYTFmMi01OWMxN2E5MzliYzQiLCJlbWFpbCI6ImdvZHphbmliQHh5ei5jb20iLCJpYXQiOjE3MTkwMzgzNzksImV4cCI6MTcxOTg0NDc3OX0.r9NURxvwRq61rUslKNnzSOD2gWcKdlE22R5kpu_IG3U' }; // auth header with bearer token
 
 export const fetchAuctions = createAsyncThunk("auctions/fetchAll", () => {
   return axios
-    .get('http://localhost:9090/auction/')
+    .request({ method: 'get', url: 'http://localhost:8080/auction/', headers: { 'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI0ZTU3ZGZmOS01ZTk2LTRlZjYtYTFmMi01OWMxN2E5MzliYzQiLCJlbWFpbCI6ImdvZHphbmliQHh5ei5jb20iLCJpYXQiOjE3MTkwMzgzNzksImV4cCI6MTcxOTg0NDc3OX0.r9NURxvwRq61rUslKNnzSOD2gWcKdlE22R5kpu_IG3U' } })
     .then(response => response.data)
 })
 
 export const fetchAuction = createAsyncThunk("auction/fetch", (Id) => {
   return axios
-    .get(`http://localhost:9090/auction?Id=${Id}`)
+    .get(`http://localhost:8080/auction?Id=${Id}`, {}, { AuthHeader })
     .then(response => response.data)
 })
 

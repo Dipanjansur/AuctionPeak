@@ -1,7 +1,13 @@
-const HorizentalCardLayout = () => {
+import PropTypes from 'prop-types';
+
+const HorizentalCardLayout = ({ children }) => {
   return (
-    <div>HorizentalCardLayout</div>
+    <>
+      {children}
+    </>
   )
 }
-
+HorizentalCardLayout.propTypes = {
+  children: PropTypes.node,
+}
 export default HorizentalCardLayout

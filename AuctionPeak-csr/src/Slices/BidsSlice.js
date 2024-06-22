@@ -10,13 +10,13 @@ const InitialState = {
 
 export const fetchBids = createAsyncThunk("Bids/fetchAll", () => {
   return axios
-    .get('http://localhost:9090/bids/')
+    .get('http://localhost:8080/bids/')
     .then(response => response.data)
 })
 
 export const fetchBid = createAsyncThunk("Bid/fetch", (Id) => {
   return axios
-    .get(`http://localhost:9090/bids?Id=${Id}`)
+    .get(`http://localhost:8080/bids?Id=${Id}`)
     .then(response => response.data)
 })
 

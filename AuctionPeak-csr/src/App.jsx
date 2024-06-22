@@ -8,17 +8,18 @@ import LoginPage from "./Pages/LoginPage";
 import AuctionPage from "./Pages/AuctionPage";
 import ItemsPage from "./Pages/ItemsPage";
 import BidsPage from "./Pages/BidsPage";
-import AboutUs from "./Pages/AboutUs";
 import Pricing from "./Pages/Pricing";
-import Goals from "./Pages/Goals";
 import SignUpPage from "./Pages/SignUpPage";
 import BasicFullScreenLayout from "./Layout/BasicFullScreenLayout";
+import ErrorPage from "./Pages/ErrorPage";
+import NotFoundPage from "./Pages/NotFoundPage";
 //TODO: make this a context state
-const isloggedIn = false
+const isloggedIn = true
 export const router = createBrowserRouter([
   {
     path: '/',
     element: isloggedIn ? <BasicFullScreenLayout /> : < LoggedOutLayout />,
+    errorElement: <ErrorPage />,
     children: [
       {
         path: '/',
@@ -41,16 +42,8 @@ export const router = createBrowserRouter([
         element: <LoginPage />,
       },
       {
-        path: '/aboutus',
-        element: <AboutUs />,
-      },
-      {
         path: '/pricing',
         element: <Pricing />,
-      },
-      {
-        path: '/goals',
-        element: <Goals />,
       },
       {
         path: '/signUp',
@@ -61,6 +54,10 @@ export const router = createBrowserRouter([
             element: <div>Details Page</div>, // Replace with your actual component
           },
         ],
+      },
+      {
+        path: '*',
+        element: <NotFoundPage />,
       },
     ]
   }
