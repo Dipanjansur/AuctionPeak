@@ -3,9 +3,9 @@ const { getAllItems, getItemById, createNewItem, updateItemData, deleteItem } = 
 const isAuthticated = require('../middleware/isAuthticated');
 // const { canView, canUpdate } = require('../middleware/PermisssionManager');
 const ItemsRouter = express.Router();
-ItemsRouter.get('/', isAuthticated, getAllItems);
-ItemsRouter.get('/:ItemId', isAuthticated, getItemById)
+ItemsRouter.get('/', getAllItems);
+ItemsRouter.get('/:ItemId', getItemById)
 ItemsRouter.post('/', createNewItem)
-ItemsRouter.patch('/:ItemId', isAuthticated, updateItemData)
-ItemsRouter.delete('/:ItemId', isAuthticated, deleteItem)
+ItemsRouter.patch('/:ItemId', updateItemData)
+ItemsRouter.delete('/:ItemId', deleteItem)
 module.exports = ItemsRouter;

@@ -17,7 +17,13 @@ export const fetchAuctions = createAsyncThunk("auctions/fetchAll", () => {
 
 export const fetchAuction = createAsyncThunk("auction/fetch", (Id) => {
   return axios
-    .get(`http://localhost:8080/auction?Id=${Id}`, {}, { AuthHeader })
+    .get(`http://localhost:8080/auction/${Id}`, {}, { AuthHeader })
+    .then(response => response.data)
+})
+
+export const fetchAuctionItems = createAsyncThunk("auction/fetchItems", (Id) => {
+  return axios
+    .get(`http://localhost:8080/items?auction=${Id}`, {}, { AuthHeader })
     .then(response => response.data)
 })
 
@@ -31,7 +37,7 @@ const AuctionSlice = createSlice({
     })
     builder.addCase(fetchAuctions.fulfilled, (state, action) => {
       state.loading = false
-      state.data = action.payload
+      state.Auctions = action.payload
     })
     builder.addCase(fetchAuctions.rejected, (state, action) => {
       state.loading = false
@@ -42,9 +48,20 @@ const AuctionSlice = createSlice({
     })
     builder.addCase(fetchAuction.fulfilled, (state, action) => {
       state.loading = false
-      state.data = action.payload
+      state.Auction = action.payload
     })
     builder.addCase(fetchAuction.rejected, (state, action) => {
+      state.loading = false
+      state.err = action.payload
+    })
+    builder.addCase(fetchAuctionItems.pending, (state) => {
+      state.loading = true
+    })
+    builder.addCase(fetchAuctionItems.fulfilled, (state, action) => {
+      state.loading = false
+      state.Auction.Items = action.payload
+    })
+    builder.addCase(fetchAuctionItems.rejected, (state, action) => {
       state.loading = false
       state.err = action.payload
     })

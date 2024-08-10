@@ -3,6 +3,7 @@ const { Auction } = require("../models/Auctions");
 const { v4: uuidv4 } = require('uuid');
 const Logging = require("../utils/Logger");
 const { Logging_level, Entity, Events, Models } = require("../utils/LoggerParams");
+const { isPrimitive } = require("sequelize/lib/utils");
 const getAllAuctions = async (req, res) => {
   try {
     const retrievedAuction = await Auction.findAll({});
@@ -43,7 +44,7 @@ const getAuctionById = async (req, res) => {
 const createNewAuction = async (req, res) => {
   const newAuction = req.body
   try {
-    const createdAuction = await Auction.create({ AuctionId: uuidv4(), name: newAuction.name, startTime: newAuction.startTime, endTime: newAuction.endTime });
+    const createdAuction = await Auction.create({ AuctionId: uuidv4(), name: newAuction.name, AuctionDetails: newAuction.AuctionDetails, startTime: newAuction.startTime, endTime: newAuction.endTime });
     Logging(Logging_level.info, Entity.Controller, Events.CREATE_OP, `created a new Auction with id ${createdAuction.AuctionId} getAuctionById`, Models.Auction)
     return res.status(200).json({ message: `Creating a new auction with Id, ${createdAuction.AuctionId}` }, Models.Auction);
   }

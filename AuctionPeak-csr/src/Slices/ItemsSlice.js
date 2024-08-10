@@ -30,7 +30,7 @@ const ItemSlice = createSlice({
     })
     builder.addCase(fetchItems.fulfilled, (state, action) => {
       state.loading = false
-      state.data = action.payload
+      state.Items = action.payload
     })
     builder.addCase(fetchItems.rejected, (state, action) => {
       state.loading = false
@@ -41,7 +41,7 @@ const ItemSlice = createSlice({
     })
     builder.addCase(fetchItem.fulfilled, (state, action) => {
       state.loading = false
-      state.data = action.payload
+      state.Item = action.payload
     })
     builder.addCase(fetchItem.rejected, (state, action) => {
       state.loading = false

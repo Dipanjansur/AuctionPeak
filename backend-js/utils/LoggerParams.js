@@ -25,6 +25,7 @@ const Events = {
   UPDATE_OP: 'UPDATE_OP',
   DELETE_OP: 'DELETE_OP',
   Auction: 'Auction',
+  JWT_VALIDATIONS: 'Jwt_validations',
   SERVER_ACTIVITIES: 'SERVER_ACTIVITIES'
 };
 const Models = {

@@ -22,7 +22,7 @@ const Auction = sequelize.define('auction', {
   isPremium: {
     type: DataTypes.ENUM('corporate', 'paid', 'verified', 'free tier', 'guest')
   },
-  profilepic: {
+  auctionPic: {
     type: DataTypes.STRING(100),
     validate: {
       isUrl: true

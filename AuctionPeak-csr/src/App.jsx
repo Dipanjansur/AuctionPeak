@@ -13,6 +13,8 @@ import SignUpPage from "./Pages/SignUpPage";
 import BasicFullScreenLayout from "./Layout/BasicFullScreenLayout";
 import ErrorPage from "./Pages/ErrorPage";
 import NotFoundPage from "./Pages/NotFoundPage";
+import AuctionDetails from "./Components/AuctionDetails";
+import ItemDetails from "./Components/ItemDetails";
 //TODO: make this a context state
 const isloggedIn = true
 export const router = createBrowserRouter([
@@ -30,8 +32,15 @@ export const router = createBrowserRouter([
         element: <AuctionPage />
       },
       {
+        path: '/auctions/:auctionId',
+        element: <AuctionDetails />
+      },
+      {
         path: '/items',
         element: <ItemsPage />
+      }, {
+        path: '/items/:ItemId',
+        element: <ItemDetails />
       },
       {
         path: '/bids',

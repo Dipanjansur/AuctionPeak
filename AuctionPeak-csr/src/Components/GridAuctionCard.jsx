@@ -1,26 +1,36 @@
 import { useEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { fetchAuctions } from '../Slices/AuctionSlice'
+import { useNavigate } from 'react-router-dom'
 
 const GridAuctionCard = () => {
-  const auctions = useSelector(state => state.auction)
+  const auctions = useSelector(state => state.auction.Auctions)
   const dispatch = useDispatch()
+
   useEffect(() => {
     dispatch(fetchAuctions())
-  }, [])
-
+  }, [dispatch])
+  if (!auctions || auctions.length === 0) {
+    return <div>No auctions available</div>;
+  }
+  return <ul>{auctions.map((item) =>
+    <AuctionCard key={item.AuctionId} item={item} />
+  )}
+  </ul>
+}
+const AuctionCard = ({ item }) => {
+  const navigate = useNavigate();
   return (
-    <div className="card card-compact w-96 bg-base-100 shadow-xl">
-      <figure><img src="https://img.daisyui.com/images/stock/photo-1606107557195-0e29a4b5b4aa.jpg" alt="Shoes" /></figure>
+    <li className="card card-compact w-96 bg-base-100 shadow-xl mx-2 my-4" onClick={() => { navigate(`/auctions/${item.AuctionId}`) }}>
+      <figure><img src={item?.auctionPic} alt={item?.name} /></figure>
       <div className="card-body">
-        <h2 className="card-title">Shoes!</h2>
-        <p>If a dog chews shoes whose shoes does he choose?</p>
+        <h2 className="card-title text-2xl font-bold p-4 mx-2">{item?.name}</h2>
+        <p>{item?.AuctionDetails}</p>
         <div className="card-actions justify-end">
           <button className="btn btn-primary">Buy Now</button>
         </div>
       </div>
-    </div>
+    </li >
   )
 }
-
 export default GridAuctionCard

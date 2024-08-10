@@ -1,11 +1,10 @@
 import { useState } from "react"
 import GridCardsLayout from "../Layout/GridCardsLayout";
 import HorizentalCardLayout from "../Layout/HorizentalCardLayout";
-import HorizentalAuctionCard from "../Components/HorizentalAuctionCard";
-import GridAuctionCard from "../Components/GridAuctionCard";
+import GenericCards from "../Components/GenericCards";
 
 const AuctionPage = () => {
-  const [layout, setlayout] = useState({ "GridCardsLayout": false, "HorizentalCardLayout": true })
+  const [layout, setlayout] = useState({ "GridCardsLayout": true, "HorizentalCardLayout": false })
   function buttonClicked(keyval) {
     if (keyval == "GridCardsLayout") {
       setlayout({ "GridCardsLayout": true, "HorizentalCardLayout": false })
@@ -23,8 +22,8 @@ const AuctionPage = () => {
           HorizantalLayout
         </button>
       </div>
-      {layout.GridCardsLayout && <GridCardsLayout ><GridAuctionCard /></GridCardsLayout>}
-      {layout.HorizentalCardLayout && <HorizentalCardLayout ><HorizentalAuctionCard /></HorizentalCardLayout>}
+      {layout.HorizentalCardLayout && <GridCardsLayout ><GenericCards type="Auction_Horizental" /></GridCardsLayout>}
+      {layout.GridCardsLayout && <HorizentalCardLayout ><GenericCards type="Auction_Vertical" /></HorizentalCardLayout>}
     </>
   );
 }
