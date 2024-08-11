@@ -1,9 +1,10 @@
 const { scoped } = require("../middleware/PermisssionManager");
-const { Auction } = require("../models/Auctions");
+const { Auction, AuctionParticipants } = require("../models/Auctions");
 const { v4: uuidv4 } = require('uuid');
 const Logging = require("../utils/Logger");
 const { Logging_level, Entity, Events, Models } = require("../utils/LoggerParams");
 const { isPrimitive } = require("sequelize/lib/utils");
+const Items = require("../models/Items");
 const getAllAuctions = async (req, res) => {
   try {
     const retrievedAuction = await Auction.findAll({});
@@ -26,7 +27,20 @@ const getAuctionById = async (req, res) => {
     const retrievedAuction = await Auction.findOne({
       where: {
         AuctionId: auctionId,
-      }, include: [Items],
+      }, include: [
+        {
+          model: Items,
+          as: 'items', // Use the alias defined in the association
+
+        }]
+    });
+    const auctionedItems = await Auction.findAll({
+      where: { AuctionId: auctionId },
+      include: [{
+        model: Items,
+        as: 'items',
+        through: { attributes: [] } // This will exclude the join table attributes
+      }]
     });
     if (retrievedAuction == null) {
       Logging(Logging_level.warn, Entity.Controller, Events.READ_OP, "no entity found getAuctionById", Models.Auction)
