@@ -46,7 +46,7 @@ const loginUser = async (req, res) => {
       return res.status(400).json({ message: "Invalid password" });
     }
     const jwttoken = generateAuthToken(user);
-    res.status(201).json({ message: "Login Information working", userId: user.usersId, jwt: jwttoken });
+    res.status(200).json({ userId: user.usersId, jwt: jwttoken });
   } catch (error) {
     res.status(500).json({ message: "Error logging in", error: error.message });
   }

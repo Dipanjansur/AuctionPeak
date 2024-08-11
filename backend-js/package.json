@@ -5,6 +5,7 @@
   "main": "App.js",
   "scripts": {
     "start": "node --env-file=.env App.js ",
+    "dev_run":"node --env-file=.env --watch App.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",

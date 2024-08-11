@@ -3,9 +3,9 @@ const { getAllBids, getBidsById, createNewBids, updateBids, deleteBids } = requi
 const isAuthticated = require('../middleware/isAuthticated');
 // const { canView, canUpdate, canDelete } = require('../middleware/PermisssionManager');
 const BidsRouter = express.Router();
-BidsRouter.get('/', isAuthticated, getAllBids);
-BidsRouter.get('/:BidsId', isAuthticated, getBidsById)
-BidsRouter.post('/', isAuthticated, createNewBids)
-BidsRouter.patch('/:BidsId', isAuthticated, updateBids)
-BidsRouter.delete('/:BidsId', isAuthticated, deleteBids)
+BidsRouter.get('/', getAllBids);
+BidsRouter.get('/:BidsId', getBidsById)
+BidsRouter.post('/', createNewBids)
+BidsRouter.patch('/:BidsId', updateBids)
+BidsRouter.delete('/:BidsId', deleteBids)
 module.exports = BidsRouter;

@@ -26,7 +26,7 @@ const getAuctionById = async (req, res) => {
     const retrievedAuction = await Auction.findOne({
       where: {
         AuctionId: auctionId,
-      },
+      }, include: [Items],
     });
     if (retrievedAuction == null) {
       Logging(Logging_level.warn, Entity.Controller, Events.READ_OP, "no entity found getAuctionById", Models.Auction)

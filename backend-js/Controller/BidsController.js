@@ -1,6 +1,8 @@
 const Bids = require("../models/Bids");
 const { v4: uuidv4 } = require('uuid');
 const { Logging_level, Entity, Events, Models } = require("../utils/LoggerParams");
+const Logging = require("../utils/Logger");
+const { mostRecentBidsFilter, mostParticipantsBidsFilter, mostPaidBidsFilter } = require("../utils/bidsfilters");
 
 const getAllBids = async (req, res) => {
   try {
@@ -10,13 +12,30 @@ const getAllBids = async (req, res) => {
       return res.status(400).json({ message: "no entity found" })
     }
     Logging(Logging_level.info, Entity.Controller, Events.READ_OP, Models.Bids, ` got data getAllBids${retrievedBids}`)
-    return res.status(200).json({ message: retrievedBids })
+    const res_json = []
+    try {
+      const recentBids = await mostRecentBidsFilter();
+      res_json.push({ "tittle": "Most Recent Bids", value: recentBids })
+      const mostpaid = await mostPaidBidsFilter();
+      res_json.push({ "tittle": "Most Paid Bids", value: mostpaid })
+      // const mostparticipants = await mostParticipantsBidsFilter();
+      // res_json.push({ "tittle": "Most Recent Bids", value: recentBids })
+      return res.status(200).json({ message: res_json })
+    }
+    catch (err) {
+      console.log(err)
+      return res.status(200).json({ message: retrievedBids })
+    }
+
   }
   catch (err) {
     Logging(Logging_level.error, Entity.Controller, Events.READ_OP, Models.Bids, `something went wrong in getAllBids${err}`)
     return res.status(500).json({ message: "something went wrong" })
   }
 }
+
+
+
 
 const getBidsById = async (req, res) => {
   const { BidsId } = req.params
