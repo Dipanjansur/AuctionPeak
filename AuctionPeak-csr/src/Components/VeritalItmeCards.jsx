@@ -3,7 +3,7 @@ import { Navigate } from "react-router-dom"
 const VeritalItmeCards = ({ data }) => (
   <ul className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
     {
-      data?.message.map((item) => {
+      data?.map((item) => {
         return (
           <li key={item.ItemId} onClick={() => { Navigate(`/itmes/${item.ItemId}`) }}>
             <img
