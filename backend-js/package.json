@@ -5,7 +5,7 @@
   "main": "App.js",
   "scripts": {
     "start": "node --env-file=.env App.js ",
-    "dev_run":"node --env-file=.env --watch App.js",
+    "dev_run": "node --env-file=.env --watch App.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
@@ -20,5 +20,8 @@
     "sequelize": "^6.6.2",
     "uuid": "^9.0.1",
     "winston": "^3.13.0"
+  },
+  "devDependencies": {
+    "sequelize-cli": "^6.6.2"
   }
 }
