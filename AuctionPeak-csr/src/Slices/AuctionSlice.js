@@ -1,30 +1,22 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit"
 import axios from "axios"
+import Baseaxios from "../utils/axiosConstruct";
 
 const initialState = {
   loading: false,
   erros: null,
   Auctions: [],
-  Auction: {}
+  Auction: null
 }
-const AuthHeader = { 'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI0ZTU3ZGZmOS01ZTk2LTRlZjYtYTFmMi01OWMxN2E5MzliYzQiLCJlbWFpbCI6ImdvZHphbmliQHh5ei5jb20iLCJpYXQiOjE3MTkwMzgzNzksImV4cCI6MTcxOTg0NDc3OX0.r9NURxvwRq61rUslKNnzSOD2gWcKdlE22R5kpu_IG3U' }; // auth header with bearer token
 
-export const fetchAuctions = createAsyncThunk("auctions/fetchAll", () => {
-  return axios
-    .request({ method: 'get', url: 'http://localhost:8080/auction/', headers: { 'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI0ZTU3ZGZmOS01ZTk2LTRlZjYtYTFmMi01OWMxN2E5MzliYzQiLCJlbWFpbCI6ImdvZHphbmliQHh5ei5jb20iLCJpYXQiOjE3MTkwMzgzNzksImV4cCI6MTcxOTg0NDc3OX0.r9NURxvwRq61rUslKNnzSOD2gWcKdlE22R5kpu_IG3U' } })
-    .then(response => response.data)
+export const fetchAuctions = createAsyncThunk("auctions/fetchAll", async () => {
+  const response = await Baseaxios.get('auction');
+  return response;
 })
 
-export const fetchAuction = createAsyncThunk("auction/fetch", (Id) => {
-  return axios
-    .get(`http://localhost:8080/auction/${Id}`, {}, { AuthHeader })
-    .then(response => response.data)
-})
-
-export const fetchAuctionItems = createAsyncThunk("auction/fetchItems", (Id) => {
-  return axios
-    .get(`http://localhost:8080/items?auction=${Id}`, {}, { AuthHeader })
-    .then(response => response.data)
+export const fetchAuction = createAsyncThunk("auction/fetch", async (Id) => {
+  const response = await Baseaxios.get(`auction/${Id}`);
+  return response;
 })
 
 
@@ -51,17 +43,6 @@ const AuctionSlice = createSlice({
       state.Auction = action.payload
     })
     builder.addCase(fetchAuction.rejected, (state, action) => {
-      state.loading = false
-      state.err = action.payload
-    })
-    builder.addCase(fetchAuctionItems.pending, (state) => {
-      state.loading = true
-    })
-    builder.addCase(fetchAuctionItems.fulfilled, (state, action) => {
-      state.loading = false
-      state.Auction.Items = action.payload
-    })
-    builder.addCase(fetchAuctionItems.rejected, (state, action) => {
       state.loading = false
       state.err = action.payload
     })

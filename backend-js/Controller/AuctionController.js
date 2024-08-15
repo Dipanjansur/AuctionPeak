@@ -1,4 +1,3 @@
-const { scoped } = require("../middleware/PermisssionManager");
 const { Auction, AuctionParticipants } = require("../models/Auctions");
 const { v4: uuidv4 } = require('uuid');
 const Logging = require("../utils/Logger");
@@ -27,27 +26,22 @@ const getAuctionById = async (req, res) => {
     const retrievedAuction = await Auction.findOne({
       where: {
         AuctionId: auctionId,
-      }, include: [
-        {
-          model: Items,
-          as: 'items', // Use the alias defined in the association
-
-        }]
+      }
     });
-    const auctionedItems = await Auction.findAll({
-      where: { AuctionId: auctionId },
-      include: [{
-        model: Items,
-        as: 'items',
-        through: { attributes: [] } // This will exclude the join table attributes
-      }]
+    const auctionedItems = await Items.findAll({
+      where: { auctionId: auctionId },
+      // include: [{
+      //   model: Items,
+      //   as: 'items',
+      //   through: { attributes: [] } // This will exclude the join table attributes
+      // }]
     });
     if (retrievedAuction == null) {
       Logging(Logging_level.warn, Entity.Controller, Events.READ_OP, "no entity found getAuctionById", Models.Auction)
       return res.status(400).json({ message: "no entity found" })
     }
     Logging(Logging_level.info, Entity.Controller, Events.READ_OP, ` got data getAuctionById${retrievedAuction}`, Models.Auction)
-    return res.status(200).json({ message: retrievedAuction });
+    return res.status(200).json({ "message": { "AuctionDetail": retrievedAuction, "items": auctionedItems } });
   }
   catch (err) {
     Logging(Logging_level.error, Entity.Controller, Events.READ_OP, `something went wrong in getAuctionById${err}`, Models.Auction)

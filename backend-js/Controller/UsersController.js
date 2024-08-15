@@ -5,7 +5,7 @@ const { generateAuthToken } = require("../utils/JwtHelper");
 const { Logging_level, Entity, Events, Models } = require("../utils/LoggerParams");
 
 const signInUser = async (req, res) => {
-  const { username, password, firstName, lastname, email } = req.body;
+  const { username, password, firstName, lastName, email, bio } = req.body;
 
   try {
     const salt = await bcrypt.genSalt(10);
@@ -15,8 +15,9 @@ const signInUser = async (req, res) => {
       usersId: uuidv4(),
       username,
       firstName,
-      lastname,
+      lastName,
       email,
+      bio,
       password: hashedPassword
     });
     const jwttoken = generateAuthToken(newUser);

@@ -1,5 +1,6 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit"
 import axios from "axios"
+import Baseaxios from "../utils/axiosConstruct";
 
 const InitialState = {
   loading: false,
@@ -8,16 +9,15 @@ const InitialState = {
   Bid: {}
 }
 
-export const fetchBids = createAsyncThunk("Bids/fetchAll", () => {
-  return axios
-    .get('http://localhost:8080/bids/')
-    .then(response => response.data)
+export const fetchBids = createAsyncThunk("Bids/fetchAll", async () => {
+  const response = await Baseaxios.get('bids');
+  return response;
 })
 
-export const fetchBid = createAsyncThunk("Bid/fetch", (Id) => {
-  return axios
-    .get(`http://localhost:8080/bids?Id=${Id}`)
-    .then(response => response.data)
+export const fetchBid = createAsyncThunk("Bid/fetch", async (Id) => {
+  const response = await Baseaxios.get(`bids/{Id}`);
+  return response;
+
 })
 
 

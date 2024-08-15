@@ -47,5 +47,6 @@ const Users = sequelize.define('users', {
 );
 // Users.hasMany(Items, { foreignKey: 'OwnedItems', onDelete: 'CASCADE' })
 Items.belongsTo(Users, { foreignKey: 'Owner', onDelete: 'CASCADE' })
-Users.belongsTo(Role, { foreignKey: 'UserRoles', onDelete: 'CASCADE' });
+Users.belongsToMany(Role, { through: "UserRoles", foreignKey: "userId", otherKey: "roleId" })
+
 module.exports = Users;
