@@ -7,30 +7,26 @@ module.exports = {
     await queryInterface.bulkInsert('UserRoles', [
       {
         "userId": "967f9e52-7f66-4514-91f1-30186fb1aa70",
-        "roleId": "d37fbcd2-c7a0-4a5a-86b4-3d39516e7d18",
+        "roleId": "cf6bdad9-6ad6-4a65-97aa-1db755cdceb6",
         "createdAt": "2024-08-01T12:00:00.000Z",
         "updatedAt": "2024-08-01T12:00:00.000Z"
       },
       {
         "userId": 'b65ca550-01cd-4dd9-b03f-af60b4a3f597',
-        "roleId": "d37fbcd2-c7a0-4a5a-86b4-3d39516e7d18",
-        "createdAt": "2024-08-01T12:00:00.000Z",
+"roleId": "cf6bdad9-6ad6-4a65-97aa-1db755cdceb6",        "createdAt": "2024-08-01T12:00:00.000Z",
         "updatedAt": "2024-08-01T12:00:00.000Z",
       },
       {
         "userId": 'c77c1493-05b4-4482-bccf-49b336c4c821',
-        "roleId": "d37fbcd2-c7a0-4a5a-86b4-3d39516e7d18",
-        "createdAt": "2024-08-01T12:00:00.000Z",
+"roleId": "cf6bdad9-6ad6-4a65-97aa-1db755cdceb6",        "createdAt": "2024-08-01T12:00:00.000Z",
         "updatedAt": "2024-08-01T12:00:00.000Z",
       }, {
         "userId": 'c9934d20-11f7-4b3d-a8d0-c20a64e0917b',
-        "roleId": "d37fbcd2-c7a0-4a5a-86b4-3d39516e7d18",
-        "createdAt": "2024-08-01T12:00:00.000Z",
+"roleId": "cf6bdad9-6ad6-4a65-97aa-1db755cdceb6",        "createdAt": "2024-08-01T12:00:00.000Z",
         "updatedAt": "2024-08-01T12:00:00.000Z",
       }, {
         "userId": '04d823e2-b3c6-4bca-8eb8-854bd4e46059',
-        "roleId": "122fd644-a582-4f73-9d3b-88b3b1abba74",
-        "createdAt": "2024-08-01T12:00:00.000Z",
+"roleId": "cf6bdad9-6ad6-4a65-97aa-1db755cdceb6",        "createdAt": "2024-08-01T12:00:00.000Z",
         "updatedAt": "2024-08-01T12:00:00.000Z",
       }, {
         "userId": 'be57ec59-d6ef-4d28-88a3-b0624ad66d46',
@@ -89,18 +85,6 @@ module.exports = {
         "createdAt": "2024-08-01T12:00:00.000Z",
         "updatedAt": "2024-08-01T12:00:00.000Z",
       }
-
-
-
-
-
-
-
-
-
-
-
-
     ], {});
   },
 
