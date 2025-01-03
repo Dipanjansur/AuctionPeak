@@ -22,7 +22,7 @@ const isAuthticated = async (req, res, next) => {
     req.userId = decoded._id;
     email = decoded.email
     const user = await Users.findOne({
-      userId: decoded._id,
+      usersId: decoded._id
     });
     if (!user || user.email !== decoded.email) {
       Logging(Logging_level.error, Entity.Middleware, Events.READ_OP, " NO User is found against the JWT token", Models.Users)
@@ -31,20 +31,20 @@ const isAuthticated = async (req, res, next) => {
         error: { message: 'invalid token' },
       });
     }
-    Logging(Logging_level.info, Entity.Middleware, Events.READ_OP, "User is found against the JWT token", Models.Users)
-    req.user = user;
-    const UserRole = await Role.findOne({
-      UserRole: Role.RoleId
-    })
-    if (!UserRole) {
-      Logging(Logging_level.error, Entity.Middleware, Events.READ_OP, " NO User is found against the JWT token", Models.Users)
-      return res.status(404).json({
-        code: res.statusCode,
-        error: { message: 'No valid User Roles Assiociated to the user' },
-      });
-    }
-    Logging(Logging_level.info, Entity.Middleware, Events.READ_OP, "UserRoles is valid for the user sent in the JWT token", Models.Roles)
-    req.UserRole = UserRole.name
+    // Logging(Logging_level.info, Entity.Middleware, Events.READ_OP, "User is found against the JWT token", Models.Users)
+    req.user = user.dataValues;
+    // const UserRole = await Role.findOne({
+    //   UserRole: Role.RoleId
+    // })
+    // if (!UserRole) {
+    //   Logging(Logging_level.error, Entity.Middleware, Events.READ_OP, " NO User is found against the JWT token", Models.Users)
+    //   return res.status(404).json({
+    //     code: res.statusCode,
+    //     error: { message: 'No valid User Roles Assiociated to the user' },
+    //   });
+    // }
+    // Logging(Logging_level.info, Entity.Middleware, Events.READ_OP, "UserRoles is valid for the user sent in the JWT token", Models.Roles)
+    // req.UserRole = UserRole.name
     next();
   } catch (error) {
     res.status(401).json({ error: 'Invalid token' });

@@ -4,6 +4,8 @@ const Logging = require("../utils/Logger");
 const { Logging_level, Entity, Events, Models } = require("../utils/LoggerParams");
 const { isPrimitive } = require("sequelize/lib/utils");
 const Items = require("../models/Items");
+const { hello } = require("../utils/AuctionActions");
+const { filterActionsByPermissions } = require("../utils/filterActionsByPermissions");
 const getAllAuctions = async (req, res) => {
   try {
     const retrievedAuction = await Auction.findAll({});
@@ -12,7 +14,15 @@ const getAllAuctions = async (req, res) => {
       return res.status(400).json({ message: "no entity found" })
     }
     Logging(Logging_level.info, Entity.Controller, Events.READ_OP, ` got data getAllAuctions${retrievedAuction}`, Models.Auction)
-    return res.status(200).json(retrievedAuction)
+    console.log("11111")
+    const PermissionAggrigator=req.user.Roles.map((Role)=>Role.dataValues.Permissions.map((Permission=>Permission.dataValues.PermissionName)))
+    console.log(...PermissionAggrigator)
+    const actionInjected = retrievedAuction.map((eachAuction) => {
+      const actionadded = filterActionsByPermissions(eachAuction, hello,...PermissionAggrigator)
+      return { ...eachAuction.dataValues, "actions": actionadded }
+    })
+    console.log("it is ", actionInjected)
+    return res.status(200).json(actionInjected)
   }
   catch (err) {
     Logging(Logging_level.error, Entity.Controller, Events.READ_OP, `something went wrong in getAllAuctions${err}`, Models.Auction)
