@@ -26,7 +26,12 @@ const Auction = sequelize.define('auction', {
     type: DataTypes.STRING(100),
     validate: {
       isUrl: true
-    }
+    },
+  },
+  createdBy:{
+    type: DataTypes.UUID,
+    defaultValue: DataTypes.UUIDV4,  // Automatically generate UUIDs
+    allowNull: false,
   },
   startTime: {
     type: DataTypes.DATE,
@@ -42,7 +47,8 @@ const Auction = sequelize.define('auction', {
   timestamps: true
 });
 const AuctionParticipants = sequelize.define('AuctionParticipants', {}, { timestamps: false });
-Auction.belongsToMany(User, { through: 'AuctionParticipants', as: 'participants', foreignKey: 'auctionId' });
+Auction.belongsTo(User,{foreignKey:"createdBy"})
+Auction.belongsToMany(User, {through: 'AuctionParticipants',as: 'participants',foreignKey: 'auctionId',otherKey: 'userId'});
 Items.belongsTo(Auction, { foreignKey: 'auctionId' });
 Auction.hasMany(Bids, { as: 'bids', foreignKey: 'auctionId' });
 module.exports = { Auction, AuctionParticipants };

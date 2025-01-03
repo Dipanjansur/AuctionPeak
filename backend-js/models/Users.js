@@ -2,6 +2,7 @@ const { DataTypes } = require("sequelize");
 const sequelize = require("./index");
 const Items = require("./Items");
 const Role = require("./Roles");
+const Permission = require("./Permissions");
 
 const Users = sequelize.define('users', {
   usersId: {
@@ -47,6 +48,9 @@ const Users = sequelize.define('users', {
 );
 // Users.hasMany(Items, { foreignKey: 'OwnedItems', onDelete: 'CASCADE' })
 Items.belongsTo(Users, { foreignKey: 'Owner', onDelete: 'CASCADE' })
+// a permission can be assigned to a user based on role here
 Users.belongsToMany(Role, { through: "UserRoles", foreignKey: "userId", otherKey: "roleId" })
+// a permission can be assigned to a user directly here
+Users.belongsToMany(Permission, { through: 'UserPermissions', foreignKey: 'userId', otherKey: 'permId' });
 
 module.exports = Users;

@@ -13,7 +13,8 @@ module.exports = {
         "startTime": "2024-07-01T10:00:00.000Z",
         "endTime": "2024-07-05T18:00:00.000Z",
         "createdAt": "2024-07-01T10:00:00.000Z",
-        "updatedAt": "2024-07-01T10:00:00.000Z"
+        "updatedAt": "2024-07-01T10:00:00.000Z",
+        "createdBy":"967f9e52-7f66-4514-91f1-30186fb1aa70"
       },
       {
         "AuctionId": "e86ea7bc-acbd-4ee4-b349-c8fd46cf60bf",
@@ -24,7 +25,8 @@ module.exports = {
         "startTime": "2024-07-10T12:00:00.000Z",
         "endTime": "2024-07-15T20:00:00.000Z",
         "createdAt": "2024-07-10T12:00:00.000Z",
-        "updatedAt": "2024-07-10T12:00:00.000Z"
+        "updatedAt": "2024-07-10T12:00:00.000Z",
+        "createdBy":"967f9e52-7f66-4514-91f1-30186fb1aa70"
       },
       {
         "AuctionId": "b52491dc-21bf-449a-ac07-7e75b5d1c075",
@@ -35,7 +37,8 @@ module.exports = {
         "startTime": "2024-07-20T09:00:00.000Z",
         "endTime": "2024-07-25T17:00:00.000Z",
         "createdAt": "2024-07-20T09:00:00.000Z",
-        "updatedAt": "2024-07-20T09:00:00.000Z"
+        "updatedAt": "2024-07-20T09:00:00.000Z",
+        "createdBy":"b65ca550-01cd-4dd9-b03f-af60b4a3f597"
       },
       {
         "AuctionId": "40e5a90e-fba4-440f-bbc7-532cf5571305",
@@ -46,7 +49,8 @@ module.exports = {
         "startTime": "2024-08-01T11:00:00.000Z",
         "endTime": "2024-08-05T19:00:00.000Z",
         "createdAt": "2024-08-01T11:00:00.000Z",
-        "updatedAt": "2024-08-01T11:00:00.000Z"
+        "updatedAt": "2024-08-01T11:00:00.000Z",
+        "createdBy":"b65ca550-01cd-4dd9-b03f-af60b4a3f597"
       },
       {
         "AuctionId": "fcaba534-30b9-4140-bf82-602a801afe95",
@@ -57,7 +61,8 @@ module.exports = {
         "startTime": "2024-08-10T14:00:00.000Z",
         "endTime": "2024-08-14T22:00:00.000Z",
         "createdAt": "2024-08-10T14:00:00.000Z",
-        "updatedAt": "2024-08-10T14:00:00.000Z"
+        "updatedAt": "2024-08-10T14:00:00.000Z",
+        "createdBy":"c9934d20-11f7-4b3d-a8d0-c20a64e0917b"
       },
       {
         "AuctionId": "730ffb10-b74e-49e8-a836-76d93a740e72",
@@ -68,7 +73,8 @@ module.exports = {
         "startTime": "2024-08-20T13:00:00.000Z",
         "endTime": "2024-08-25T21:00:00.000Z",
         "createdAt": "2024-08-20T13:00:00.000Z",
-        "updatedAt": "2024-08-20T13:00:00.000Z"
+        "updatedAt": "2024-08-20T13:00:00.000Z",
+        "createdBy":"c9934d20-11f7-4b3d-a8d0-c20a64e0917b"
       },
       {
         "AuctionId": "7aa99ef9-cced-477b-a2a0-373a177839f3",
@@ -79,7 +85,8 @@ module.exports = {
         "startTime": "2024-08-30T15:00:00.000Z",
         "endTime": "2024-09-03T23:00:00.000Z",
         "createdAt": "2024-08-30T15:00:00.000Z",
-        "updatedAt": "2024-08-30T15:00:00.000Z"
+        "updatedAt": "2024-08-30T15:00:00.000Z",
+        "createdBy":"c9934d20-11f7-4b3d-a8d0-c20a64e0917b"
       },
       {
         "AuctionId": "124dfa19-2d7f-4aaf-af7a-67f0dba64a29",
@@ -90,7 +97,8 @@ module.exports = {
         "startTime": "2024-09-10T16:00:00.000Z",
         "endTime": "2024-09-14T00:00:00.000Z",
         "createdAt": "2024-09-10T16:00:00.000Z",
-        "updatedAt": "2024-09-10T16:00:00.000Z"
+        "updatedAt": "2024-09-10T16:00:00.000Z",        
+        "createdBy":"04d823e2-b3c6-4bca-8eb8-854bd4e46059"
       },
       {
         "AuctionId": "307eaec4-8b18-4950-891a-620163d242ef",
@@ -101,7 +109,8 @@ module.exports = {
         "startTime": "2024-09-20T17:00:00.000Z",
         "endTime": "2024-09-24T01:00:00.000Z",
         "createdAt": "2024-09-20T17:00:00.000Z",
-        "updatedAt": "2024-09-20T17:00:00.000Z"
+        "updatedAt": "2024-09-20T17:00:00.000Z",
+        "createdBy":"04d823e2-b3c6-4bca-8eb8-854bd4e46059"
       },
       {
         "AuctionId": "96bd3ba2-516c-4382-acdc-11e6f09a4697",
@@ -112,7 +121,8 @@ module.exports = {
         "startTime": "2024-09-30T18:00:00.000Z",
         "endTime": "2024-10-04T02:00:00.000Z",
         "createdAt": "2024-09-30T18:00:00.000Z",
-        "updatedAt": "2024-09-30T18:00:00.000Z"
+        "updatedAt": "2024-09-30T18:00:00.000Z",
+        "createdBy":"04d823e2-b3c6-4bca-8eb8-854bd4e46059"
       }
     ], {});
 
