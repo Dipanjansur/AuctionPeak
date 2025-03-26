@@ -7,24 +7,24 @@ module.exports = {
     await queryInterface.bulkInsert('UserRoles', [
       {
         "userId": "967f9e52-7f66-4514-91f1-30186fb1aa70",
-        "roleId": "d37fbcd2-c7a0-4a5a-86b4-3d39516e7d18",
+        "roleId": "cf6bdad9-6ad6-4a65-97aa-1db755cdceb6",
         "createdAt": "2024-08-01T12:00:00.000Z",
         "updatedAt": "2024-08-01T12:00:00.000Z"
       },
       {
         "userId": 'b65ca550-01cd-4dd9-b03f-af60b4a3f597',
-        "roleId": "d37fbcd2-c7a0-4a5a-86b4-3d39516e7d18",
+        "roleId": "cf6bdad9-6ad6-4a65-97aa-1db755cdceb6",
         "createdAt": "2024-08-01T12:00:00.000Z",
         "updatedAt": "2024-08-01T12:00:00.000Z",
       },
       {
         "userId": 'c77c1493-05b4-4482-bccf-49b336c4c821',
-        "roleId": "d37fbcd2-c7a0-4a5a-86b4-3d39516e7d18",
+        "roleId": "cf6bdad9-6ad6-4a65-97aa-1db755cdceb6",
         "createdAt": "2024-08-01T12:00:00.000Z",
         "updatedAt": "2024-08-01T12:00:00.000Z",
       }, {
         "userId": 'c9934d20-11f7-4b3d-a8d0-c20a64e0917b',
-        "roleId": "d37fbcd2-c7a0-4a5a-86b4-3d39516e7d18",
+        "roleId": "cf6bdad9-6ad6-4a65-97aa-1db755cdceb6",
         "createdAt": "2024-08-01T12:00:00.000Z",
         "updatedAt": "2024-08-01T12:00:00.000Z",
       }, {

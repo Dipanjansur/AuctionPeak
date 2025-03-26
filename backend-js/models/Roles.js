@@ -17,6 +17,6 @@ const Role = sequelize.define('Roles', {
   },
 });
 // Role.belongsToMany(Users, { foreignKey: 'rulesId', onDelete: 'CASCADE' })
-Permission.belongsToMany(Role, { through: "RolesPerm", foreignKey: "RoleId", otherKey: "premId" });
+Permission.belongsToMany(Role, { through: "RolesPerm", foreignKey: "PermissionId", otherKey: "RoleId",primaryKey:"RolePermissionId" });
 // Define associations
 module.exports = Role
