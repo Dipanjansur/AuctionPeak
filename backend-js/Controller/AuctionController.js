@@ -4,6 +4,18 @@ const Logging = require("../utils/Logger");
 const { Logging_level, Entity, Events, Models } = require("../utils/LoggerParams");
 const { isPrimitive } = require("sequelize/lib/utils");
 const Items = require("../models/Items");
+const { hello } = require("../utils/AuctionActions");
+const { filterActionsByPermissions } = require("../utils/filterActionsByPermissions");
+
+
+const permisssionActionMapper={
+
+  "get":["view_auction"],
+  "post":["create_auction"],
+  "update":["update_auction"],
+  "delete":["delete_auction"]
+}
+
 const getAllAuctions = async (req, res) => {
   try {
     const retrievedAuction = await Auction.findAll({});
@@ -12,7 +24,11 @@ const getAllAuctions = async (req, res) => {
       return res.status(400).json({ message: "no entity found" })
     }
     Logging(Logging_level.info, Entity.Controller, Events.READ_OP, ` got data getAllAuctions${retrievedAuction}`, Models.Auction)
-    return res.status(200).json(retrievedAuction)
+    const actionInjected = retrievedAuction.map((eachAuction) => {
+      const permissionAdd = filterActionsByPermissions(eachAuction, hello, ["create_auction", "view_auction", "delete_auction"])
+      return { ...eachAuction.dataValues, "permission": Array.from(permissionAdd)};
+    })
+    return res.status(200).json(actionInjected)
   }
   catch (err) {
     Logging(Logging_level.error, Entity.Controller, Events.READ_OP, `something went wrong in getAllAuctions${err}`, Models.Auction)
@@ -52,9 +68,15 @@ const getAuctionById = async (req, res) => {
 const createNewAuction = async (req, res) => {
   const newAuction = req.body
   try {
+    const permissionCheck = filterActionsByPermissions(eachAuction, hello, ["create_auction", "view_auction", "delete_auction"])
+    if(permissionCheck.has(permisssionActionMapper.post)){
     const createdAuction = await Auction.create({ AuctionId: uuidv4(), name: newAuction.name, AuctionDetails: newAuction.AuctionDetails, startTime: newAuction.startTime, endTime: newAuction.endTime });
     Logging(Logging_level.info, Entity.Controller, Events.CREATE_OP, `created a new Auction with id ${createdAuction.AuctionId} getAuctionById`, Models.Auction)
     return res.status(200).json({ message: `Creating a new auction with Id, ${createdAuction.AuctionId}` }, Models.Auction);
+    }else{
+      return res.status(403).json({ message: `you do not have endough permission to create a Auction` }, Models.Auction);
+
+    }
   }
   catch (err) {
     Logging(Logging_level.error, Entity.Controller, Events.CREATE_OP, `something unexpected" + ${err}`, Models.Auction)
@@ -67,6 +89,8 @@ const updateAuctionData = async (req, res) => {
   const auction = req.body
   console.log(auction)
   try {
+    const permissionCheck = filterActionsByPermissions(eachAuction, hello, ["create_auction", "view_auction", "delete_auction"])
+    if(permissionCheck.has(permisssionActionMapper.update)){
     const Retrivedauction = await Auction.findOne({
       where: {
         AuctionId: auctionId,
@@ -87,6 +111,10 @@ const updateAuctionData = async (req, res) => {
     Logging(Logging_level.info, Entity.Controller, Events.UPDATE_OP, `updated successfully updateAuctionData`, Models.Auction)
     return res.status(200).json({ message: Retrivedauction });
   }
+  else{
+    return res.status(403).json({ message: "you do not have endough permission to update this Auction Data" });
+  }
+  }
   catch (err) {
     Logging(Logging_level.error, Entity.Controller, Events.UPDATE_OP, `something unexpected updateAuctionData ${err}`, Models.Auction)
     console.log("something unexpected" + err);
@@ -97,6 +125,9 @@ const updateAuctionData = async (req, res) => {
 const deleteAuction = async (req, res) => {
   const { auctionId } = req.params
   try {
+    const permissionCheck = filterActionsByPermissions(eachAuction, hello, ["create_auction", "view_auction", "delete_auction"])
+    if(permissionCheck.has(permisssionActionMapper.update)){
+
     const Retrivedauction = await Auction.destroy({
       where: {
         AuctionId: auctionId,
@@ -109,6 +140,10 @@ const deleteAuction = async (req, res) => {
       Logging(Logging_level.warn, Entity.Controller, Events.UPDATE_OP, "no entity found or already deleted deleteAuction", Models.Auction)
       return res.status(400).json({ message: "no entity found or already deleted" });
     }
+  }
+  else{
+    return res.status(403).json({ message: "you do not have endough permission to delete this Auction Data" });
+  }
   }
   catch (err) {
     Logging(Logging_level.error, Entity.Controller, Events.UPDATE_OP, `something unexpected deleteAuction ${err}`, Models.Auction)

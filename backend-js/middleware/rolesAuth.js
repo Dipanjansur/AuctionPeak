@@ -1,16 +1,11 @@
-function roleChecker(requiredRole) {
-  return function (req, res, next) {
-    const user = req.user;
-
-    if (!user) {
-      return res.status(401).send('User not authenticated');
-    }
-
-    if (user.role !== requiredRole) {
-      return res.status(403).send('User does not have the required role');
-    }
+const rolesAuth = (...allowedRoles) => {
+  return (req, res, next) => {
+    if (!req?.roles) return res.sendStatus(401);
+    const rolesArray = [...allowedRoles];
+    const result = req.roles.map(role => rolesArray.includes(role)).find(val => val === true);
+    if (!result) return res.sendStatus(401);
     next();
-  };
+  }
 }
 
 module.exports = roleChecker;
