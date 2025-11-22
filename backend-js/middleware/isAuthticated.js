@@ -7,7 +7,7 @@ const { Logging_level, Entity, Events, Models } = require('../utils/LoggerParams
 
 const isAuthticated = async (req, res, next) => {
   const AuthBearerToken = req.header("Authorization");
-
+  let token;
   if (!AuthBearerToken) {
     return res.status(401).json({ error: 'Access denied' });
   }
@@ -22,21 +22,22 @@ const isAuthticated = async (req, res, next) => {
     req.userId = decoded._id;
     email = decoded.email
     const user = await Users.findOne({
-      userId: decoded._id,
+      where: { usersId: decoded._id },
+      include: [{
+        model: Role,
+        attributes: ['RoleId', 'name']
+      }]
     });
     if (!user || user.email !== decoded.email) {
-      Logging(Logging_level.error, Entity.Middleware, Events.READ_OP, " NO User is found against the JWT token", Models.Users)
+      Logging(Logging_level.error, Entity.Middleware, Events.READ_OP, "NO User is found against the JWT token", Models.Users)
       return res.status(404).json({
         code: res.statusCode,
         error: { message: 'invalid token' },
       });
     }
-    Logging(Logging_level.info, Entity.Middleware, Events.READ_OP, "User is found against the JWT token", Models.Users)
     req.user = user;
-    const UserRole = await Role.findOne({
-      UserRole: Role.RoleId
-    })
-    if (!UserRole) {
+    req.UserRole = user.Roles; 
+    if (!req.UserRole) {
       Logging(Logging_level.error, Entity.Middleware, Events.READ_OP, " NO User is found against the JWT token", Models.Users)
       return res.status(404).json({
         code: res.statusCode,
@@ -44,9 +45,9 @@ const isAuthticated = async (req, res, next) => {
       });
     }
     Logging(Logging_level.info, Entity.Middleware, Events.READ_OP, "UserRoles is valid for the user sent in the JWT token", Models.Roles)
-    req.UserRole = UserRole.name
     next();
   } catch (error) {
+    console.log(error)
     res.status(401).json({ error: 'Invalid token' });
   }
 }

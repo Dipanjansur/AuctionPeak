@@ -1,6 +1,5 @@
 const express = require('express');
 const { signInUser, loginUser, getUsersById, getAllUsers, updateProfileData, deleteUsers } = require('../Controller/UsersController');
-// const { canView, canUpdate, canDelete } = require('../middleware/PermisssionManager');
 const isAuthticated = require('../middleware/isAuthticated');
 const UsersRouter = express.Router();
 UsersRouter.post('/signin', signInUser);

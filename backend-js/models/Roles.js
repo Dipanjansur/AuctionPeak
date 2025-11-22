@@ -2,7 +2,7 @@ const { Sequelize, DataTypes } = require('sequelize');
 const sequelize = require("./index");
 const Permission = require('./Permissions');
 
-const Role = sequelize.define('Roles', {
+const Roles = sequelize.define('Roles', {
   RoleId: {
     type: DataTypes.UUID,
     defaultValue: DataTypes.UUIDV4,  // Automatically generate UUIDs
@@ -16,7 +16,11 @@ const Role = sequelize.define('Roles', {
     unique: true,
   },
 });
-// Role.belongsToMany(Users, { foreignKey: 'rulesId', onDelete: 'CASCADE' })
-Permission.belongsToMany(Role, { through: "RolesPerm", foreignKey: "PermissionId", otherKey: "RoleId",primaryKey:"RolePermissionId" });
+Roles.belongsToMany(Permission, { 
+  through: "RolesPerm", 
+  foreignKey: "RoleId", 
+  otherKey: "PermissionId"
+});
+Permission.belongsToMany(Roles, { through: "RolesPerm", foreignKey: "PermissionId", otherKey: "RoleId",primaryKey:"RolePermissionId" });
 // Define associations
-module.exports = Role
+module.exports = Roles

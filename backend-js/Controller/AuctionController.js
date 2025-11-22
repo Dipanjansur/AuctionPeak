@@ -1,155 +1,219 @@
-const { Auction, AuctionParticipants } = require("../models/Auctions");
 const { v4: uuidv4 } = require('uuid');
+const { Auction } = require("../models/Auctions");
 const Logging = require("../utils/Logger");
 const { Logging_level, Entity, Events, Models } = require("../utils/LoggerParams");
-const { isPrimitive } = require("sequelize/lib/utils");
-const Items = require("../models/Items");
-const { hello } = require("../utils/AuctionActions");
-const { filterActionsByPermissions } = require("../utils/filterActionsByPermissions");
+const { log } = require('winston');
+
+// Define permissions constants
+const PERMISSIONS = {
+  ADMIN_ACCESS: 'all_auction',   
+  VIEW_BASIC: 'view_auction',    
+  CREATE: 'create_auction',      
+  UPDATE_AUCTION: 'update_auction', 
+  DELETE_AUCTION: 'delete_auction'  
+};
+
+/**
+ * Helper: Determines the database 'where' clause for ACCESS/VISIBILITY.
+ * Use this when fetching data.
+ */
+const getReadScope = (user, permissions) => {
+  if (permissions.has(PERMISSIONS.ADMIN_ACCESS) || permissions.has(PERMISSIONS.VIEW_BASIC)) {
+    return {}; 
+  }
+  return { createdBy: user.usersId };
+};
 
 
-const permisssionActionMapper={
+const getWriteScope = (user, permissions, globalPermission) => {
+  if (permissions.has(PERMISSIONS.ADMIN_ACCESS) || permissions.has(globalPermission)) {
+    return {}; 
+  }
+  return { createdBy: user.usersId };
+};
 
-  "get":["view_auction"],
-  "post":["create_auction"],
-  "update":["update_auction"],
-  "delete":["delete_auction"]
-}
+/**
+ * Helper: Decorates an auction object with computed permissions for the frontend.
+ * This implements the HATEOAS / "Smart UI" pattern.
+ */
+const attachItemPermissions = (auction, user, permissions) => {
+  const isOwner = auction.createdBy === user.usersId;
+  const auctionData = auction.toJSON ? auction.toJSON() : auction;
+  return {
+    ...auctionData,
+    meta: {
+      isOwner: isOwner,
+      canUpdate: permissions.has(PERMISSIONS.ADMIN_ACCESS) || permissions.has(PERMISSIONS.UPDATE_GLOBAL) || isOwner,
+      canDelete: permissions.has(PERMISSIONS.ADMIN_ACCESS) || permissions.has(PERMISSIONS.DELETE_GLOBAL) || isOwner
+    }
+  };
+};
 
 const getAllAuctions = async (req, res) => {
   try {
-    const retrievedAuction = await Auction.findAll({});
-    if (retrievedAuction != null && retrievedAuction.length === 0) {
-      Logging(Logging_level.warn, Entity.Controller, Events.READ_OP, "no entity found getAllAuctions", Models.Auction)
-      return res.status(400).json({ message: "no entity found" })
+    const { user,permissions} = req;
+    const scope = getReadScope(user, permissions);
+    
+    Logging(Logging_level.info, Entity.Controller, Events.READ_OP, `Fetching auctions with scope: ${JSON.stringify(scope)}`, Models.Auction);
+
+    const auctions = await Auction.findAll({ where: scope });
+
+    if (!auctions || auctions.length === 0) {
+      return res.status(200).json([]);
     }
-    Logging(Logging_level.info, Entity.Controller, Events.READ_OP, ` got data getAllAuctions${retrievedAuction}`, Models.Auction)
-    const actionInjected = retrievedAuction.map((eachAuction) => {
-      const permissionAdd = filterActionsByPermissions(eachAuction, hello, ["create_auction", "view_auction", "delete_auction"])
-      return { ...eachAuction.dataValues, "permission": Array.from(permissionAdd)};
-    })
-    return res.status(200).json(actionInjected)
+    const responseData = auctions.map(auction => attachItemPermissions(auction, user, permissions));
+
+    return res.status(200).json(responseData);
+
+  } catch (err) {
+    Logging(Logging_level.error, Entity.Controller, Events.READ_OP, `Error in getAllAuctions: ${err.message}`, Models.Auction);
+    return res.status(500).json({ message: "Internal Server Error" });
   }
-  catch (err) {
-    Logging(Logging_level.error, Entity.Controller, Events.READ_OP, `something went wrong in getAllAuctions${err}`, Models.Auction)
-    return res.status(500).json({ message: "something went wrong" })
-  }
-}
+};
 
 const getAuctionById = async (req, res) => {
-  const { auctionId } = req.params
   try {
-    const retrievedAuction = await Auction.findOne({
+    const { auctionId } = req.params;
+    const { user, permissions } = req;
+
+    // 1. Determine Visibility
+    const scope = getReadScope(user, permissions);
+    const query = {
       where: {
         AuctionId: auctionId,
+        ...scope
       }
-    });
-    const auctionedItems = await Items.findAll({
-      where: { auctionId: auctionId },
-      // include: [{
-      //   model: Items,
-      //   as: 'items',
-      //   through: { attributes: [] } // This will exclude the join table attributes
-      // }]
-    });
-    if (retrievedAuction == null) {
-      Logging(Logging_level.warn, Entity.Controller, Events.READ_OP, "no entity found getAuctionById", Models.Auction)
-      return res.status(400).json({ message: "no entity found" })
+    };
+
+    const auction = await Auction.findOne(query);
+
+    if (!auction) {
+      Logging(Logging_level.warn, Entity.Controller, Events.READ_OP, `Auction not found or access denied: ${auctionId}`, Models.Auction);
+      return res.status(404).json({ message: "Auction not found" });
     }
-    Logging(Logging_level.info, Entity.Controller, Events.READ_OP, ` got data getAuctionById${retrievedAuction}`, Models.Auction)
-    return res.status(200).json({ "message": { "AuctionDetail": retrievedAuction, "items": auctionedItems } });
+
+    // 2. Inject Permissions
+    const responseData = attachItemPermissions(auction, user, permissions);
+
+    Logging(Logging_level.info, Entity.Controller, Events.READ_OP, `Retrieved auction: ${auctionId}`, Models.Auction);
+    return res.status(200).json(responseData);
+
+  } catch (err) {
+    Logging(Logging_level.error, Entity.Controller, Events.READ_OP, `Error in getAuctionById: ${err.message}`, Models.Auction);
+    return res.status(500).json({ message: "Internal Server Error" });
   }
-  catch (err) {
-    Logging(Logging_level.error, Entity.Controller, Events.READ_OP, `something went wrong in getAuctionById${err}`, Models.Auction)
-    return res.status(500).json({ message: "something went wrong" })
-  }
-}
+};
 
 const createNewAuction = async (req, res) => {
-  const newAuction = req.body
   try {
-    const permissionCheck = filterActionsByPermissions(eachAuction, hello, ["create_auction", "view_auction", "delete_auction"])
-    if(permissionCheck.has(permisssionActionMapper.post)){
-    const createdAuction = await Auction.create({ AuctionId: uuidv4(), name: newAuction.name, AuctionDetails: newAuction.AuctionDetails, startTime: newAuction.startTime, endTime: newAuction.endTime });
-    Logging(Logging_level.info, Entity.Controller, Events.CREATE_OP, `created a new Auction with id ${createdAuction.AuctionId} getAuctionById`, Models.Auction)
-    return res.status(200).json({ message: `Creating a new auction with Id, ${createdAuction.AuctionId}` }, Models.Auction);
-    }else{
-      return res.status(403).json({ message: `you do not have endough permission to create a Auction` }, Models.Auction);
+    const { user, permissions } = req;
+    const payload = req.body;
 
+    // 1. Capability Check
+    // Logic: To create, you MUST have the specific 'create_auction' capability.
+    // Just "viewing" or "owning" isn't enough, because you don't own it yet.
+    const canCreate = permissions.includes(PERMISSIONS.CREATE) || permissions.includes(PERMISSIONS.ADMIN_ACCESS);
+
+    if (!canCreate) {
+      Logging(Logging_level.warn, Entity.Controller, Events.CREATE_OP, `Unauthorized create attempt by user: ${user.userId}`, Models.Auction);
+      return res.status(403).json({ message: "Insufficient permissions to create an auction" });
     }
+
+    if (!payload.name || !payload.startTime || !payload.endTime) {
+      return res.status(400).json({ message: "Missing required fields" });
+    }
+
+    const newAuction = await Auction.create({
+      AuctionId: uuidv4(),
+      name: payload.name,
+      AuctionDetails: payload.AuctionDetails,
+      startTime: payload.startTime,
+      endTime: payload.endTime,
+      createdBy: user.userId
+    });
+
+    Logging(Logging_level.info, Entity.Controller, Events.CREATE_OP, `Created auction: ${newAuction.AuctionId}`, Models.Auction);
+    return res.status(201).json(newAuction);
+
+  } catch (err) {
+    Logging(Logging_level.error, Entity.Controller, Events.CREATE_OP, `Error in createNewAuction: ${err.message}`, Models.Auction);
+    return res.status(500).json({ message: "Internal Server Error" });
   }
-  catch (err) {
-    Logging(Logging_level.error, Entity.Controller, Events.CREATE_OP, `something unexpected" + ${err}`, Models.Auction)
-    res.status(500).json({ message: "Something Went Wrong" });
-  }
-}
+};
 
 const updateAuctionData = async (req, res) => {
-  const { auctionId } = req.params
-  const auction = req.body
-  console.log(auction)
   try {
-    const permissionCheck = filterActionsByPermissions(eachAuction, hello, ["create_auction", "view_auction", "delete_auction"])
-    if(permissionCheck.has(permisssionActionMapper.update)){
-    const Retrivedauction = await Auction.findOne({
+    const { auctionId } = req.params;
+    const updates = req.body;
+    const { user, permissions } = req;
+
+    if (Object.keys(updates).length === 0) return res.status(400).json({ message: "No update data provided" });
+
+    // 1. Security Enforcement: Global Permission OR Owner
+    const scope = getWriteScope(user, permissions, PERMISSIONS.UPDATE_GLOBAL);
+    
+    const auctionToUpdate = await Auction.findOne({
       where: {
         AuctionId: auctionId,
-      },
+        ...scope // This ensures only owners (or admins) find the record
+      }
     });
-    if (Retrivedauction == null) {
-      Logging(Logging_level.warn, Entity.Controller, Events.UPDATE_OP, "no entity found updateAuctionData", Models.Auction)
-      return res.status(400).json({ message: "no entity found with that Id" })
+
+    if (!auctionToUpdate) {
+      return res.status(404).json({ message: "Auction not found or unauthorized" });
     }
-    if ((auction.name == auction.startTime == auction.endTime == null) || ((Retrivedauction.name == auction.name && Retrivedauction.startTime == auction.startTime) && Retrivedauction.endTime == auction.endTime)) {
-      Logging(Logging_level.warn, Entity.Controller, Events.UPDATE_OP, `please check the request parameters updateAuctionData.Not a valid request ${req}`, Models.Auction)
-      return res.status(404).json({ message: "please check the request parameters.Not a valid request" }, Models.Auction)
-    }
-    (auction.name != null) && (Retrivedauction.name = auction.name);
-    (auction.startTime != null) && (Retrivedauction.startTime = auction.startTime);
-    (auction.endTime != null) && (Retrivedauction.endTime = auction.endTime);
-    await Retrivedauction.save();
-    Logging(Logging_level.info, Entity.Controller, Events.UPDATE_OP, `updated successfully updateAuctionData`, Models.Auction)
-    return res.status(200).json({ message: Retrivedauction });
+
+    // 2. Apply Updates
+    if (updates.name) auctionToUpdate.name = updates.name;
+    if (updates.startTime) auctionToUpdate.startTime = updates.startTime;
+    if (updates.endTime) auctionToUpdate.endTime = updates.endTime;
+    if (updates.AuctionDetails) auctionToUpdate.AuctionDetails = updates.AuctionDetails;
+
+    await auctionToUpdate.save();
+
+    Logging(Logging_level.info, Entity.Controller, Events.UPDATE_OP, `Updated auction: ${auctionId}`, Models.Auction);
+    
+    // Return the object with updated permission meta (just in case logic changes)
+    return res.status(200).json(attachItemPermissions(auctionToUpdate, user, permissions));
+
+  } catch (err) {
+    Logging(Logging_level.error, Entity.Controller, Events.UPDATE_OP, `Error in updateAuctionData: ${err.message}`, Models.Auction);
+    return res.status(500).json({ message: "Internal Server Error" });
   }
-  else{
-    return res.status(403).json({ message: "you do not have endough permission to update this Auction Data" });
-  }
-  }
-  catch (err) {
-    Logging(Logging_level.error, Entity.Controller, Events.UPDATE_OP, `something unexpected updateAuctionData ${err}`, Models.Auction)
-    console.log("something unexpected" + err);
-    res.status(500).json({ message: "Something Went Wrong" });
-  }
-}
+};
 
 const deleteAuction = async (req, res) => {
-  const { auctionId } = req.params
   try {
-    const permissionCheck = filterActionsByPermissions(eachAuction, hello, ["create_auction", "view_auction", "delete_auction"])
-    if(permissionCheck.has(permisssionActionMapper.update)){
+    const { auctionId } = req.params;
+    const { user, permissions } = req;
 
-    const Retrivedauction = await Auction.destroy({
+    // 1. Security Enforcement
+    const scope = getWriteScope(user, permissions, PERMISSIONS.DELETE_GLOBAL);
+
+    const deletedCount = await Auction.destroy({
       where: {
         AuctionId: auctionId,
-      },
+        ...scope
+      }
     });
-    if (Retrivedauction == 1) {
-      Logging(Logging_level.info, Entity.Controller, Events.UPDATE_OP, `deleted successfully deleteAuction`, Models.Auction)
-      return res.status(200).json({ message: "sucessfultty deleted" });
-    } else {
-      Logging(Logging_level.warn, Entity.Controller, Events.UPDATE_OP, "no entity found or already deleted deleteAuction", Models.Auction)
-      return res.status(400).json({ message: "no entity found or already deleted" });
+
+    if (deletedCount === 0) {
+      return res.status(404).json({ message: "Auction not found or unauthorized" });
     }
+
+    Logging(Logging_level.info, Entity.Controller, Events.DELETE_OP, `Deleted auction: ${auctionId}`, Models.Auction);
+    return res.status(200).json({ message: "Auction deleted successfully" });
+
+  } catch (err) {
+    Logging(Logging_level.error, Entity.Controller, Events.DELETE_OP, `Error in deleteAuction: ${err.message}`, Models.Auction);
+    return res.status(500).json({ message: "Internal Server Error" });
   }
-  else{
-    return res.status(403).json({ message: "you do not have endough permission to delete this Auction Data" });
-  }
-  }
-  catch (err) {
-    Logging(Logging_level.error, Entity.Controller, Events.UPDATE_OP, `something unexpected deleteAuction ${err}`, Models.Auction)
-    res.status(500).json({ message: "Something Went Wrong" });
-  }
-}
+};
+
 module.exports = {
-  getAllAuctions, getAuctionById, createNewAuction, updateAuctionData, deleteAuction
-}
+  getAllAuctions,
+  getAuctionById,
+  createNewAuction,
+  updateAuctionData,
+  deleteAuction
+};

@@ -46,21 +46,20 @@ app.use((err, req, res, next) => {
   res.status(500).send('Something bad happened!')
 })
 
-
 app.listen(port, async () => {
-  sequelize.authenticate()
-    .then(() => {
-      Logging(Logging_level.info, Entity.Database, Events.CONNECTION, "database connection is sucessfullly")
-    }).catch((err) => {
-      Logging(Logging_level.error, Entity.Database, Events.CONNECTION, `database connection is failed ${err}`)
+  try {
+    await sequelize.authenticate();
+    Logging(Logging_level.info, Entity.Database, Events.CONNECTION, "database connection is successfully");
+  } catch (e) {
+    Logging(Logging_level.error, Entity.Database, Events.CONNECTION, "database connection failed " + e);
+  }
 
-    })
-  sequelize
-    .sync({ force: false, logging: console.log })
-    .then((result) => {
-      Logging(Logging_level.info, Entity.Database, Events.CONNECTION, "database all the models are synced")
-    }).catch((err) => {
-      Logging(Logging_level.error, Entity.Database, Events.CONNECTION, `database models syncing failed ${err}`)
-    })
-  Logging(Logging_level.info, Entity.SERVER, Events.SERVER_ACTIVITIES, `server is running at ${port}`)
-})
+  try {
+    await sequelize.sync({ force: false, logging: console.log });
+    Logging(Logging_level.info, Entity.Database, Events.CONNECTION, "models synced");
+  } catch (err) {
+    Logging(Logging_level.error, Entity.Database, Events.CONNECTION, "sync failed " + err);
+  }
+
+  Logging(Logging_level.info, Entity.SERVER, Events.SERVER_ACTIVITIES, `server running at ${port}`);
+});

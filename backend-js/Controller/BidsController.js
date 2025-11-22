@@ -1,128 +1,252 @@
 const Bids = require("../models/Bids");
-const { v4: uuidv4 } = require('uuid');
-const { Logging_level, Entity, Events, Models } = require("../utils/LoggerParams");
+const { v4: uuidv4 } = require("uuid");
 const Logging = require("../utils/Logger");
-const { mostRecentBidsFilter, mostParticipantsBidsFilter, mostPaidBidsFilter } = require("../utils/bidsfilters");
+const { Logging_level, Entity, Events, Models } = require("../utils/LoggerParams");
+
+const {
+  mostRecentBidsFilter,
+  mostPaidBidsFilter,
+  mostParticipantsBidsFilter,
+} = require("../utils/bidsfilters");
+
+const PERMISSIONS = {
+  ADMIN_ACCESS: "all_bids",
+  VIEW_BASIC: "view_bids",
+  CREATE: "create_bids",
+  UPDATE_GLOBAL: "update_bids",
+  DELETE_GLOBAL: "delete_bids",
+};
+
+
+const getReadScope = (user, permissions) => {
+  if (
+    permissions.includes(PERMISSIONS.ADMIN_ACCESS) ||
+    permissions.includes(PERMISSIONS.VIEW_BASIC)
+  ) {
+    return {};
+  }
+  return { createdBy: user.userId };
+};
+
+const getWriteScope = (user, permissions, globalPermission) => {
+  if (
+    permissions.includes(PERMISSIONS.ADMIN_ACCESS) ||
+    permissions.includes(globalPermission)
+  ) {
+    return {};
+  }
+  return { createdBy: user.userId };
+};
+
+const attachItemPermissions = (bid, user, permissions) => {
+  const isOwner = bid.createdBy === user.userId;
+
+  const data = bid.toJSON ? bid.toJSON() : bid;
+
+  return {
+    ...data,
+    meta: {
+      isOwner,
+      canUpdate:
+        permissions.includes(PERMISSIONS.ADMIN_ACCESS) ||
+        permissions.includes(PERMISSIONS.UPDATE_GLOBAL) ||
+        isOwner,
+      canDelete:
+        permissions.includes(PERMISSIONS.ADMIN_ACCESS) ||
+        permissions.includes(PERMISSIONS.DELETE_GLOBAL) ||
+        isOwner,
+    },
+  };
+};
 
 const getAllBids = async (req, res) => {
   try {
-    const retrievedBids = await Bids.findAll();
-    if (retrievedBids == null) {
-      Logging(Logging_level.warn, Entity.Controller, Events.READ_OP, Models.Bids, "no entity found getAllBids")
-      return res.status(400).json({ message: "no entity found" })
-    }
-    Logging(Logging_level.info, Entity.Controller, Events.READ_OP, Models.Bids, ` got data getAllBids${retrievedBids}`)
-    const res_json = []
-    try {
-      const recentBids = await mostRecentBidsFilter();
-      res_json.push({ "tittle": "Most Recent Bids", value: recentBids })
-      const mostpaid = await mostPaidBidsFilter();
-      res_json.push({ "tittle": "Most Paid Bids", value: mostpaid })
-      // const mostparticipants = await mostParticipantsBidsFilter();
-      // res_json.push({ "tittle": "Most Recent Bids", value: recentBids })
-      return res.status(200).json({ message: res_json })
-    }
-    catch (err) {
-      console.log(err)
-      return res.status(200).json({ message: retrievedBids })
-    }
+    const { user, permissions } = req;
+    const scope = getReadScope(user, permissions);
 
+    Logging(
+      Logging_level.info,
+      Entity.Controller,
+      Events.READ_OP,
+      `Fetching bids with scope ${JSON.stringify(scope)}`,
+      Models.Bids
+    );
+
+    const bids = await Bids.findAll({ where: scope });
+    if (!bids || bids.length === 0) return res.status(200).json([]);
+
+    const responseData = bids.map((bid) =>
+      attachItemPermissions(bid, user, permissions)
+    );
+
+    return res.status(200).json(responseData);
+  } catch (err) {
+    Logging(
+      Logging_level.error,
+      Entity.Controller,
+      Events.READ_OP,
+      `Error in getAllBids: ${err.message}`,
+      Models.Bids
+    );
+    return res.status(500).json({ message: "Internal Server Error" });
   }
-  catch (err) {
-    Logging(Logging_level.error, Entity.Controller, Events.READ_OP, Models.Bids, `something went wrong in getAllBids${err}`)
-    return res.status(500).json({ message: "something went wrong" })
-  }
-}
-
-
-
+};
 
 const getBidsById = async (req, res) => {
-  const { BidsId } = req.params
   try {
-    const retrievedBids = await Bids.findOne({
+    const { BidsId } = req.params;
+    const { user, permissions } = req;
+
+    const scope = getReadScope(user, permissions);
+
+    const bid = await Bids.findOne({
       where: {
-        BidsId: BidsId,
+        BidsId,
+        ...scope,
       },
     });
-    if (retrievedBids == null) {
-      Logging(Logging_level.warn, Entity.Controller, Events.READ_OP, Models.Bids, "no entity found getBidsById")
-      return res.status(400).json({ message: "no entity found" })
+
+    if (!bid) {
+      return res
+        .status(404)
+        .json({ message: "Bid not found or access denied" });
     }
-    Logging(Logging_level.info, Entity.Controller, Events.READ_OP, Models.Bids, ` got data getBidsById${retrievedBids}`)
-    return res.status(200).json({ message: retrievedBids });
+
+    return res.status(200).json(attachItemPermissions(bid, user, permissions));
+  } catch (err) {
+    Logging(
+      Logging_level.error,
+      Entity.Controller,
+      Events.READ_OP,
+      `Error in getBidsById: ${err.message}`,
+      Models.Bids
+    );
+    return res.status(500).json({ message: "Internal Server Error" });
   }
-  catch (err) {
-    Logging(Logging_level.error, Entity.Controller, Events.READ_OP, Models.Bids, `something went wrong in getBidsById${err}`)
-    return res.status(500).json({ message: "something went wrong" })
-  }
-}
+};
 
 const createNewBids = async (req, res) => {
-  const newBids = req.body
   try {
-    const createdBid = await Bids.create({ BidsId: uuidv4(), amount: newBids.amount });
-    Logging(Logging_level.info, Entity.Controller, Events.CREATE_OP, Models.Bids, `created a new Auction with id ${createdBid.BidsId} createNewBids`)
-    return res.status(201).json({ message: `Creating a new auction with Id createNewBids, ${createdBid.BidsId}` });
+    const { user, permissions } = req;
+    const payload = req.body;
+
+    const canCreate =
+      permissions.includes(PERMISSIONS.CREATE) ||
+      permissions.includes(PERMISSIONS.ADMIN_ACCESS);
+
+    if (!canCreate)
+      return res
+        .status(403)
+        .json({ message: "Insufficient permissions to create bid" });
+
+    if (!payload.amount)
+      return res.status(400).json({ message: "Missing bid amount" });
+
+    const createdBid = await Bids.create({
+      BidsId: uuidv4(),
+      amount: payload.amount,
+      createdBy: user.userId,
+      AuctionId: payload.AuctionId,
+    });
+
+    Logging(
+      Logging_level.info,
+      Entity.Controller,
+      Events.CREATE_OP,
+      `Created bid ${createdBid.BidsId}`,
+      Models.Bids
+    );
+
+    return res.status(201).json(createdBid);
+  } catch (err) {
+    Logging(
+      Logging_level.error,
+      Entity.Controller,
+      Events.CREATE_OP,
+      `Error in createNewBids: ${err.message}`,
+      Models.Bids
+    );
+    return res.status(500).json({ message: "Internal Server Error" });
   }
-  catch (err) {
-    Logging(Logging_level.error, Entity.Controller, Events.CREATE_OP, Models.Bids, `something unexpected createNewBids" + ${err}`)
-    res.status(500).json({ message: "Something Went Wrong" });
-  }
-}
+};
 
 const updateBids = async (req, res) => {
-  const { BidsId } = req.params
-  const Bid = req.body
   try {
-    const RetrivedBids = await Bids.findOne({
-      where: {
-        BidsId: BidsId,
-      },
+    const { BidsId } = req.params;
+    const updates = req.body;
+    const { user, permissions } = req;
+
+    if (!updates.amount)
+      return res.status(400).json({ message: "No data to update" });
+
+    const scope = getWriteScope(user, permissions, PERMISSIONS.UPDATE_GLOBAL);
+
+    const bid = await Bids.findOne({
+      where: { BidsId, ...scope },
     });
-    if (RetrivedBids == null) {
-      Logging(Logging_level.warn, Entity.Controller, Events.UPDATE_OP, Models.Bids, "no entity found updateBids")
-      return res.status(400).json({ message: "no entity found with that Id" })
-    }
-    if ((Bid.amount == null) || (RetrivedBids.name == Bid.name)) {
-      Logging(Logging_level.warn, Entity.Controller, Events.UPDATE_OP, Models.Bids, `please check the request parameters updateBids.Not a valid request ${req}`)
-      return res.status(404).json({ message: "please check the request parameters.Not a valid request" })
-    }
-    (auction.name != null) && (RetrivedBids.name = auction.name);
-    (auction.startTime != null) && (RetrivedBids.startTime = auction.startTime);
-    (auction.endTime != null) && (RetrivedBids.endTime = auction.endTime);
-    await RetrivedBids.save()
-    Logging(Logging_level.info, Entity.Controller, Events.UPDATE_OP, Models.Bids, `updated successfully updateBids`)
-    return res.status(200).json({ message: RetrivedBids });
+
+    if (!bid)
+      return res
+        .status(404)
+        .json({ message: "Bid not found or unauthorized" });
+
+    bid.amount = updates.amount;
+    await bid.save();
+
+    return res.status(200).json(attachItemPermissions(bid, user, permissions));
+  } catch (err) {
+    Logging(
+      Logging_level.error,
+      Entity.Controller,
+      Events.UPDATE_OP,
+      `Error in updateBids: ${err.message}`,
+      Models.Bids
+    );
+    return res.status(500).json({ message: "Internal Server Error" });
   }
-  catch (err) {
-    Logging(Logging_level.error, Entity.Controller, Events.UPDATE_OP, Models.Bids, `something unexpected updateBids ${err}`)
-    res.status(500).json({ message: "Something Went Wrong" });
-  }
-}
+};
 
 const deleteBids = async (req, res) => {
-  const { BidsId } = req.params
   try {
-    const RetrivedBids = await Auction.destroy({
-      where: {
-        BidsId: BidsId,
-      },
+    const { BidsId } = req.params;
+    const { user, permissions } = req;
+
+    const scope = getWriteScope(user, permissions, PERMISSIONS.DELETE_GLOBAL);
+
+    const deletedCount = await Bids.destroy({
+      where: { BidsId, ...scope },
     });
-    if (RetrivedBids == 1) {
-      Logging(Logging_level.info, Entity.Controller, Events.UPDATE_OP, Models.Bids, `deleted successfully deleteBids`)
-      return res.status(200).json({ message: "sucessfully deleted" });
-    } else {
-      Logging(Logging_level.warn, Entity.Controller, Events.UPDATE_OP, Models.Bids, "no entity found or already deleted deleteBids")
-      return res.status(200).json({ message: RetrivedBids });
-    }
+
+    if (deletedCount === 0)
+      return res
+        .status(404)
+        .json({ message: "Bid not found or unauthorized" });
+
+    Logging(
+      Logging_level.info,
+      Entity.Controller,
+      Events.DELETE_OP,
+      `Deleted bid ${BidsId}`,
+      Models.Bids
+    );
+
+    return res.status(200).json({ message: "Bid deleted successfully" });
+  } catch (err) {
+    Logging(
+      Logging_level.error,
+      Entity.Controller,
+      Events.DELETE_OP,
+      `Error in deleteBids: ${err.message}`,
+      Models.Bids
+    );
+    return res.status(500).json({ message: "Internal Server Error" });
   }
-  catch (err) {
-    Logging(Logging_level.error, Entity.Controller, Events.UPDATE_OP, Models.Bids, `something unexpected deleteBids ${err}`)
-    console.log("something unexpected" + err);
-    res.status(500).json({ message: "Something Went Wrong" });
-  }
-}
+};
+
 module.exports = {
-  getAllBids, getBidsById, createNewBids, updateBids, deleteBids
-}
+  getAllBids,
+  getBidsById,
+  createNewBids,
+  updateBids,
+  deleteBids,
+};

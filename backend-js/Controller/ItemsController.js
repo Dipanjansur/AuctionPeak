@@ -1,134 +1,258 @@
 const Items = require("../models/Items");
 const { AuctionItems } = require("../models/Auctions");
 const Logging = require("../utils/Logger");
-const { v4: uuidv4 } = require('uuid');
+const { v4: uuidv4 } = require("uuid");
 const { Logging_level, Entity, Events, Models } = require("../utils/LoggerParams");
-const { Op } = require('sequelize');
+const { Op } = require("sequelize");
+
+const PERMISSIONS = {
+  ADMIN_ACCESS: "all_items",
+  VIEW_BASIC: "view_items",
+  CREATE: "create_items",
+  UPDATE_GLOBAL: "update_items",
+  DELETE_GLOBAL: "delete_items"
+};
+
+
+const getReadScope = (user, permissions) => {
+  if (permissions.has(PERMISSIONS.ADMIN_ACCESS) || permissions.has(PERMISSIONS.VIEW_BASIC)) {
+    return {}; 
+  }else{
+    // if the basic view premission is not there then exit with a 403 staus code
+    throw new Error("Insufficient permission to view items");
+  }
+
+  //remove should be able to see all the items
+  // return { Owner: user.usersId };
+};
+
+
+const getWriteScope = (user, permissions, globalPermission) => {
+  if (permissions.has(PERMISSIONS.ADMIN_ACCESS) || permissions.has(globalPermission)) {
+    return {}; 
+  }
+  return { Owner: user.usersId };
+};
+
+/**
+ * Helper: Decorates an auction object with computed permissions for the frontend.
+ * This implements the HATEOAS / "Smart UI" pattern.
+ */
+const attachItemPermissions = (auctionItems, user, permissions) => {
+  const isOwner = auctionItems.Owner === user.usersId;
+  const auctionData = auctionItems.toJSON ? auctionItems.toJSON() : auctionItems;
+  return {
+    ...auctionData,
+    meta: {
+      isOwner: isOwner,
+      canUpdate: permissions.has(PERMISSIONS.ADMIN_ACCESS) || permissions.has(PERMISSIONS.UPDATE_GLOBAL) || isOwner,
+      canDelete: permissions.has(PERMISSIONS.ADMIN_ACCESS) || permissions.has(PERMISSIONS.DELETE_GLOBAL) || isOwner
+    }
+  };
+};
+
 const getAllItems = async (req, res) => {
   try {
+    const { user, permissions } = req;
+
+    const scope = getReadScope(user, permissions);
+
+    let items = [];
+
+    // If auction filter present
     if (req.query.auction) {
-      retrievedItemId = await AuctionItems.findAll({
-        where: {
-          auctionId: req.query.auction,
-        }, attributes: ['itemItemId']
+      const links = await AuctionItems.findAll({
+        where: { auctionId: req.query.auction },
+        attributes: ["itemItemId"]
       });
-      if (retrievedItemId.length === 0) {
-        return res.status(404).send('No items found for this auction');
+
+      if (links.length === 0) {
+        return res.status(404).json({ message: "No items found for this auction" });
       }
-      retval = []
-      retrievedItemId.forEach(element => {
-        retval.push(element.dataValues.itemItemId)
-      });
-      // retrievedItemId[0].dataValues.itemItemId)
-      const ItemsDetails = await Items.findAll({
+
+      const itemIds = links.map(x => x.dataValues.itemItemId);
+
+      items = await Items.findAll({
         where: {
-          ItemId: {
-            [Op.in]: retval
-          }
+          ItemId: { [Op.in]: itemIds },
+          ...scope
         }
       });
-      return res.status(200).json({ message: ItemsDetails })
-    }
-    const retrievedItem = await Items.findAll();
-    if (retrievedItem == null) {
-      Logging(Logging_level.warn, Entity.Controller, Events.READ_OP, Models.Items, "no entity found getAllItems")
-      return res.status(400).json({ message: "no entity found" })
-    }
-    Logging(Logging_level.info, Entity.Controller, Events.READ_OP, Models.Items, ` got data getAllItems${retrievedItem}`)
-    return res.status(200).json({ message: retrievedItem })
-  }
-  catch (err) {
-    Logging(Logging_level.error, Entity.Controller, Events.READ_OP, Models.Items, `something went wrong in getAllItems${err} `)
-    return res.status(500).json({ message: "something went wrong" })
-  }
-}
-
-const getItemById = async (req, res) => {
-  const { ItemId } = req.params;
-  try {
-    const retrievedItem = await Bids.findOne({
-      where: {
-        ItemId: ItemId,
-      },
-    });
-    if (retrievedItem == null) {
-      Logging(Logging_level.warn, Entity.Controller, Events.READ_OP, Models.Items, "no entity found getItemById")
-      return res.status(400).json({ message: "no entity found" })
-    }
-    Logging(Logging_level.info, Entity.Controller, Events.READ_OP, Models.Items, ` got data getItemById${retrievedItem} `)
-    return res.status(200).json({ message: retrievedItem });
-  }
-  catch (err) {
-    Logging(Logging_level.error, Entity.Controller, Events.READ_OP, Models.Items, `something went wrong in getItemById${err} `)
-    return res.status(500).json({ message: "something went wrong" })
-  }
-}
-
-
-const createNewItem = async (req, res) => {
-  const newItem = req.body
-  try {
-    const createdItems = await Items.create({ ItemId: uuidv4(), ItemName: newItem.ItemName, Bio: newItem.Bio, Status: newItem.Status, ItemDescription: newItem.ItemDescription, CurrentPrice: newItem.CurrentPrice });
-    Logging(Logging_level.info, Entity.Controller, Events.CREATE_OP, Models.Items, `created a new Auction with id ${createdItems.ItemId} createNewBids`)
-    return res.status(201).json({ message: `New Item Created, ${createdItems.ItemId} ` });
-  }
-  catch (err) {
-    Logging(Logging_level.error, Entity.Controller, Events.CREATE_OP, Models.Items, `something unexpected createNewBids" + ${err}`)
-    res.status(500).json({ message: "Something Went Wrong" });
-  }
-}
-
-const updateItemData = async (req, res) => {
-  const { ItemId } = req.params;
-  const updatedItem = req.body;
-  try {
-    const RetrivedItem = await Items.findOne({
-      where: {
-        ItemId: ItemId,
-      },
-    });
-    if (RetrivedItem == null) {
-      Logging(Logging_level.warn, Entity.Controller, Events.UPDATE_OP, Models.Items, "no entity found updateItemData")
-      return res.status(400).json({ message: "no entity found with that Id" })
-    }
-    if ((updatedItem.CurrentPrice == null) || (RetrivedItem.CurrentPrice == updatedItem.CurrentPrice)) {
-      Logging(Logging_level.warn, Entity.Controller, Events.UPDATE_OP, Models.Items, `please check the request parameters updateItemData.Not a valid request ${req}`)
-      return res.status(404).json({ message: "please check the request parameters.Not a valid request" })
-    }
-    (updatedItem.ItemName != null) && (RetrivedItem.ItemName = updatedItem.ItemName);
-    (updatedItem.startTime != null) && (RetrivedItem.startTime = updatedItem.startTime);
-    (updatedItem.endTime != null) && (RetrivedItem.endTime = updatedItem.endTime);
-    await RetrivedItem.save()
-    Logging(Logging_level.info, Entity.Controller, Events.UPDATE_OP, Models.Items, `updated successfully updateItemData`)
-    return res.status(200).json({ message: RetrivedItem });
-  }
-  catch (err) {
-    Logging(Logging_level.error, Entity.Controller, Events.UPDATE_OP, Models.Items, `something unexpected updateItemData ${err}`)
-    res.status(500).json({ message: "Something Went Wrong" });
-  }
-}
-
-const deleteItem = async (req, res) => {
-  const { ItemId } = req.params;
-  try {
-    const RetrivedItem = await Auction.destroy({
-      where: {
-        ItemId: ItemId,
-      },
-    });
-    if (RetrivedItem == 1) {
-      Logging(Logging_level.info, Entity.Controller, Events.UPDATE_OP, Models.Items, `deleted successfully deleteItem`)
-      return res.status(200).json({ message: "sucessfully deleted" });
     } else {
-      Logging(Logging_level.warn, Entity.Controller, Events.UPDATE_OP, Models.Items, "no entity found or already deleted deleteItem")
-      return res.status(200).json({ message: RetrivedItem });
+      items = await Items.findAll({ where: scope });
     }
+
+    if (!items || items.length === 0) {
+      return res.status(200).json([]);
+    }
+
+    const responseData = items.map(item =>
+      attachItemPermissions(item, user, permissions)
+    );
+
+    Logging(
+      Logging_level.info,
+      Entity.Controller,
+      Events.READ_OP,
+      `Fetched items`,
+      Models.Items
+    );
+
+    return res.status(200).json(responseData);
+  } catch (err) {
+    Logging(
+      Logging_level.error,
+      Entity.Controller,
+      Events.READ_OP,
+      `Error in getAllItems: ${err.message}`,
+      Models.Items
+    );
+    return res.status(500).json({ message: "Internal Server Error" });
   }
-  catch (err) {
-    Logging(Logging_level.error, Entity.Controller, Events.UPDATE_OP, Models.Items, `something unexpected deleteItem ${err}`)
-    res.status(500).json({ message: "Something Went Wrong" });
+};
+
+// GET ITEM BY ID
+const getItemById = async (req, res) => {
+  try {
+    const { ItemId } = req.params;
+    const { user, permissions } = req;
+
+    const scope = getReadScope(user, permissions);
+
+    const item = await Items.findOne({
+      where: {
+        ItemId,
+        ...scope
+      }
+    });
+
+    if (!item) {
+      return res.status(404).json({ message: "Item not found" });
+    }
+
+    const responseData = attachItemPermissions(item, user, permissions);
+
+    return res.status(200).json(responseData);
+  } catch (err) {
+    Logging(
+      Logging_level.error,
+      Entity.Controller,
+      Events.READ_OP,
+      `Error in getItemById: ${err.message}`,
+      Models.Items
+    );
+    return res.status(500).json({ message: "Internal Server Error" });
   }
-}
+};
+
+// CREATE ITEM
+const createNewItem = async (req, res) => {
+  try {
+    const { user, permissions } = req;
+    const payload = req.body;
+
+    const canCreate =
+      permissions.includes(PERMISSIONS.CREATE) ||
+      permissions.includes(PERMISSIONS.ADMIN_ACCESS);
+
+    if (!canCreate) {
+      return res.status(403).json({ message: "Insufficient permission to create item" });
+    }
+
+    const newItem = await Items.create({
+      ItemId: uuidv4(),
+      ItemName: payload.ItemName,
+      Bio: payload.Bio,
+      Status: payload.Status,
+      ItemDescription: payload.ItemDescription,
+      CurrentPrice: payload.CurrentPrice,
+      createdBy: user.userId
+    });
+
+    return res.status(201).json(newItem);
+  } catch (err) {
+    Logging(
+      Logging_level.error,
+      Entity.Controller,
+      Events.CREATE_OP,
+      `Error in createNewItem: ${err.message}`,
+      Models.Items
+    );
+    return res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+// UPDATE ITEM
+const updateItemData = async (req, res) => {
+  try {
+    const { ItemId } = req.params;
+    const updates = req.body;
+    const { user, permissions } = req;
+
+    const scope = getWriteScope(user, permissions, PERMISSIONS.UPDATE_GLOBAL);
+
+    const item = await Items.findOne({
+      where: { ItemId, ...scope }
+    });
+
+    if (!item) {
+      return res.status(404).json({ message: "Item not found or unauthorized" });
+    }
+
+    if (updates.ItemName) item.ItemName = updates.ItemName;
+    if (updates.Bio) item.Bio = updates.Bio;
+    if (updates.ItemDescription) item.ItemDescription = updates.ItemDescription;
+    if (updates.Status) item.Status = updates.Status;
+    if (updates.CurrentPrice) item.CurrentPrice = updates.CurrentPrice;
+
+    await item.save();
+
+    return res.status(200).json(attachItemPermissions(item, user, permissions));
+  } catch (err) {
+    Logging(
+      Logging_level.error,
+      Entity.Controller,
+      Events.UPDATE_OP,
+      `Error in updateItemData: ${err.message}`,
+      Models.Items
+    );
+    return res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+// DELETE ITEM
+const deleteItem = async (req, res) => {
+  try {
+    const { ItemId } = req.params;
+    const { user, permissions } = req;
+
+    const scope = getWriteScope(user, permissions, PERMISSIONS.DELETE_GLOBAL);
+
+    const result = await Items.destroy({
+      where: { ItemId, ...scope }
+    });
+
+    if (result === 0) {
+      return res.status(404).json({ message: "Item not found or unauthorized" });
+    }
+
+    return res.status(200).json({ message: "Item deleted successfully" });
+  } catch (err) {
+    Logging(
+      Logging_level.error,
+      Entity.Controller,
+      Events.DELETE_OP,
+      `Error in deleteItem: ${err.message}`,
+      Models.Items
+    );
+    return res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
 module.exports = {
-  getAllItems, getItemById, createNewItem, updateItemData, deleteItem
-}
+  getAllItems,
+  getItemById,
+  createNewItem,
+  updateItemData,
+  deleteItem
+};

@@ -10,10 +10,27 @@ config_filter = {
     mostParticipants: true,
   },
 }
-const mostRecentBidsFilter = async () => {
+
+const getReadScope = (user, permissions) => {
+  if (permissions.includes(PERMISSIONS.ADMIN_ACCESS) || permissions.includes(globalPermission)) {
+    return {}
+  }
+  return{createdBy:user.userId}; 
+}
+
+const getWriteScope=(user,permissions,otherPermissions)=>{
+  if(permissions.include(PERMISSIONS.ADMIN_ACCESS)|| permissions.include(PERMISSIONS.otherPermissions)){
+    return {}
+  }
+  return {createdBy:user.userId};
+}
+
+
+const mostRecentBidsFilter = async (page,limit) => {
   const recentBids = await Bids.findAll({
     order: [['createdAt', 'DESC']],
-    limit: 15,
+    limit: limit || 15,
+    offset: page && limit ? (page - 1) * limit : 0,
     include: [Items],
   });
   return recentBids;

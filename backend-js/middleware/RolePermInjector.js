@@ -1,32 +1,38 @@
-const { User, Role, Permission } = require('../models'); // Assuming you have models for User, Role, and Permission
+const Users = require("../models/Users");
+const Roles=require("../models/Roles");
+const Permission=require("../models/Permissions");
+const { Op } = require("sequelize");
 
 const injectRoleAndPermissionMiddleware = async (req, res, next) => {
+  const {UserRole} = req
+  allRoles = [];
+  for(var hello of UserRole){
+    allRoles.push(hello.name);
+  }
+
   try {
-    // Retrieve user information based on userId
-    const user = await User.findById(req.user.id)
-      .populate('role')
-      .exec();
-
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+  const rolesWithPermissions = await Roles.findAll({
+  where: { name: { [Op.in]: allRoles } },
+  include: [
+    {
+      model: Permission,
+      through: { attributes: [] },
     }
+  ]
+});
 
-    // Extract role and permission information
-    const role = await User.findOne({
-      where: { id: userId },
-      include: [{
-        model: Role,
-        through: {
-          attributes: [] // Exclude attributes from the join table
-        }
-      }]
+    if (!rolesWithPermissions) {
+      console.log('Permisssions not found');
+      return null;
+    }
+    const permissionsSet = new Set();
+    rolesWithPermissions.forEach(role => {
+      role.Permissions.forEach(permission => {
+ 
+        permissionsSet.add(permission.PermissionName);
+      });
     });
-    const permissions = role.permissions;
-
-    // Inject role and permissions into req object
-    req.user.role = role;
-    req.user.permissions = permissions;
-
+    req.permissions = permissionsSet;
     next();
   } catch (error) {
     console.error('Error injecting role and permission:', error);
