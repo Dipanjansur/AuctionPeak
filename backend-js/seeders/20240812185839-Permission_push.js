@@ -5,8 +5,6 @@ module.exports = {
   async up(queryInterface, Sequelize) {
 
     await queryInterface.bulkInsert('Permissions', [
-
-
       // all auction actions
       {
         PermissionId: 'de9e616b-6ce7-4a71-a851-4b6a528a58c6',
@@ -48,6 +46,89 @@ module.exports = {
         "createdAt": "2024-07-20T09:00:00.000Z",
         "updatedAt": "2024-07-20T09:00:00.000Z"
       },
+      // BIDS PERMISSIONS
+      {
+        PermissionId: '7452109d-f654-4de2-b064-c50cfaf474b2',
+        PermissionName: "all_bids",
+        action: "all",
+        resource: "bids",
+        createdAt: "2024-07-20T09:00:00.000Z",
+        updatedAt: "2024-07-20T09:00:00.000Z"
+      },
+      {
+        PermissionId: '7452109d-f654-4de2-b064-c50cfaf474b3',
+        PermissionName: "view_bids",
+        action: "view",
+        resource: "bids",
+        createdAt: "2024-07-20T09:00:00.000Z",
+        updatedAt: "2024-07-20T09:00:00.000Z"
+      },
+      {
+        PermissionId: '7452109d-f654-4de2-b064-c50cfaf474b4',
+        PermissionName: "create_bids",
+        action: "create",
+        resource: "bids",
+        createdAt: "2024-07-20T09:00:00.000Z",
+        updatedAt: "2024-07-20T09:00:00.000Z"
+      },
+      {
+        PermissionId: '7452109d-f654-4de2-b064-c50cfaf474b5',
+        PermissionName: "update_bids",
+        action: "update",
+        resource: "bids",
+        createdAt: "2024-07-20T09:00:00.000Z",
+        updatedAt: "2024-07-20T09:00:00.000Z"
+      },
+      {
+        PermissionId: '7452109d-f654-4de2-b064-c50cfaf474b6',
+        PermissionName: "delete_bids",
+        action: "delete",
+        resource: "bids",
+        createdAt: "2024-07-20T09:00:00.000Z",
+        updatedAt: "2024-07-20T09:00:00.000Z"
+      },
+
+      // ITEMS PERMISSIONS
+      {
+        PermissionId: '7452109d-f654-4de2-b064-c50cfaf474b7',
+        PermissionName: "all_items",
+        action: "all",
+        resource: "items",
+        createdAt: "2024-07-20T09:00:00.000Z",
+        updatedAt: "2024-07-20T09:00:00.000Z"
+      },
+      {
+        PermissionId: '7452109d-f654-4de2-b064-c50cfaf474b8',
+        PermissionName: "view_items",
+        action: "view",
+        resource: "items",
+        createdAt: "2024-07-20T09:00:00.000Z",
+        updatedAt: "2024-07-20T09:00:00.000Z"
+      },
+      {
+        PermissionId: '7452109d-f654-4de2-b064-c50cfaf474b9',
+        PermissionName: "create_items",
+        action: "create",
+        resource: "items",
+        createdAt: "2024-07-20T09:00:00.000Z",
+        updatedAt: "2024-07-20T09:00:00.000Z"
+      },
+      {
+        PermissionId: '7452109d-f654-4de2-b064-c50cfaf474c0',
+        PermissionName: "update_items",
+        action: "update",
+        resource: "items",
+        createdAt: "2024-07-20T09:00:00.000Z",
+        updatedAt: "2024-07-20T09:00:00.000Z"
+      },
+      {
+        PermissionId: '7452109d-f654-4de2-b064-c50cfaf474c1',
+        PermissionName: "delete_items",
+        action: "delete",
+        resource: "items",
+        createdAt: "2024-07-20T09:00:00.000Z",
+        updatedAt: "2024-07-20T09:00:00.000Z"
+      }
     ], {});
   },
 

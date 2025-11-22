@@ -20,8 +20,8 @@ const PERMISSIONS = {
 
 const getReadScope = (user, permissions) => {
   if (
-    permissions.includes(PERMISSIONS.ADMIN_ACCESS) ||
-    permissions.includes(PERMISSIONS.VIEW_BASIC)
+    permissions.has(PERMISSIONS.ADMIN_ACCESS) ||
+    permissions.has(PERMISSIONS.VIEW_BASIC)
   ) {
     return {};
   }
@@ -30,8 +30,8 @@ const getReadScope = (user, permissions) => {
 
 const getWriteScope = (user, permissions, globalPermission) => {
   if (
-    permissions.includes(PERMISSIONS.ADMIN_ACCESS) ||
-    permissions.includes(globalPermission)
+    permissions.has(PERMISSIONS.ADMIN_ACCESS) ||
+    permissions.has(globalPermission)
   ) {
     return {};
   }
@@ -48,12 +48,12 @@ const attachItemPermissions = (bid, user, permissions) => {
     meta: {
       isOwner,
       canUpdate:
-        permissions.includes(PERMISSIONS.ADMIN_ACCESS) ||
-        permissions.includes(PERMISSIONS.UPDATE_GLOBAL) ||
+        permissions.has(PERMISSIONS.ADMIN_ACCESS) ||
+        permissions.has(PERMISSIONS.UPDATE_GLOBAL) ||
         isOwner,
       canDelete:
-        permissions.includes(PERMISSIONS.ADMIN_ACCESS) ||
-        permissions.includes(PERMISSIONS.DELETE_GLOBAL) ||
+        permissions.has(PERMISSIONS.ADMIN_ACCESS) ||
+        permissions.has(PERMISSIONS.DELETE_GLOBAL) ||
         isOwner,
     },
   };
