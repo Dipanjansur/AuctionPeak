@@ -45,7 +45,7 @@ const attachItemPermissions = (bid, user, permissions) => {
 
   return {
     ...data,
-    meta: {
+    permission: {
       isOwner,
       canUpdate:
         permissions.has(PERMISSIONS.ADMIN_ACCESS) ||

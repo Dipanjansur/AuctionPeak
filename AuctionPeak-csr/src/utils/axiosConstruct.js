@@ -12,7 +12,7 @@ Baseaxios.interceptors.request.use(
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     } else {
-      window.location.href = '/login'; // Redirect to login
+     window.location.href = '/login'; // Redirect to login
     }
     return config;
   },

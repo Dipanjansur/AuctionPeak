@@ -7,13 +7,13 @@ import { fetchItems } from "../Slices/ItemsSlice";
 
 const ItemsPage = () => {
   const items = useSelector((state) => state.item.Items);
+  const itemsList = items.message
   const dispatch = useDispatch();
   useEffect(() => {
     dispatch(fetchItems())
   }, [dispatch])
   const [layout, setlayout] = useState({ "GridCardsLayout": true, "HorizentalCardLayout": false })
 
-  console.log(items)
   function buttonClicked(keyval) {
     if (keyval == "GridCardsLayout") {
       setlayout({ "GridCardsLayout": true, "HorizentalCardLayout": false })
@@ -31,8 +31,8 @@ const ItemsPage = () => {
           HorizantalLayout
         </button>
       </div>
-      {layout.GridCardsLayout && <GridCardsLayout ><GenericCards type="Items_Horizental" data={items} /></GridCardsLayout>}
-      {layout.HorizentalCardLayout && <HorizentalCardLayout ><GenericCards type="Items_Vertical" data={items} /></HorizentalCardLayout>}
+      {layout.GridCardsLayout && <GridCardsLayout ><GenericCards type="Items_Horizental" data={itemsList} /></GridCardsLayout>}
+      {layout.HorizentalCardLayout && <HorizentalCardLayout ><GenericCards type="Items_Vertical" data={itemsList} /></HorizentalCardLayout>}
     </>
   );
 }

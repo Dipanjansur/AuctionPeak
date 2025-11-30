@@ -74,3 +74,22 @@ BackEnd
   ```
   npx sequelize-cli db:seed --seed name-of-your-seeder-file.js
   ```
+
+  ### SOME IMPORTANT QUERIES
+  ```
+  SELECT "users".username, "Roles".name
+FROM "users"
+INNER JOIN "UserRoles"
+    ON "users"."usersId" = "UserRoles"."userId"
+INNER JOIN "Roles"
+    ON "UserRoles"."roleId" = "Roles"."RoleId";
+```
+
+```
+select "Roles"."name","Roles"."RoleId","Permissions"."PermissionName","Permissions"."PermissionId"
+from "Roles" 
+Inner join "RolesPerm"
+on "Roles"."RoleId" = "RolesPerm"."RoleId"
+Inner join "Permissions"
+on "RolesPerm"."PermissionId"= "Permissions"."PermissionId"
+```

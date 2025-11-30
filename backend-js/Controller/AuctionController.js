@@ -41,11 +41,12 @@ const attachItemPermissions = (auction, user, permissions) => {
   const auctionData = auction.toJSON ? auction.toJSON() : auction;
   return {
     ...auctionData,
-    meta: {
-      isOwner: isOwner,
-      canUpdate: permissions.has(PERMISSIONS.ADMIN_ACCESS) || permissions.has(PERMISSIONS.UPDATE_GLOBAL) || isOwner,
-      canDelete: permissions.has(PERMISSIONS.ADMIN_ACCESS) || permissions.has(PERMISSIONS.DELETE_GLOBAL) || isOwner
-    }
+permission: Array.from(new Set([
+  ...(isOwner ? Object.values(PERMISSIONS) : []),
+  permissions.has(PERMISSIONS.ADMIN_ACCESS) && 'all_auction',
+  (permissions.has(PERMISSIONS.UPDATE_GLOBAL) || permissions.has(PERMISSIONS.UPDATE_AUCTION)) && 'update_auction',
+  permissions.has(PERMISSIONS.DELETE_GLOBAL) && 'delete_auction'
+].filter(Boolean)))
   };
 };
 

@@ -43,7 +43,7 @@ const attachItemPermissions = (auctionItems, user, permissions) => {
   const auctionData = auctionItems.toJSON ? auctionItems.toJSON() : auctionItems;
   return {
     ...auctionData,
-    meta: {
+    permission: {
       isOwner: isOwner,
       canUpdate: permissions.has(PERMISSIONS.ADMIN_ACCESS) || permissions.has(PERMISSIONS.UPDATE_GLOBAL) || isOwner,
       canDelete: permissions.has(PERMISSIONS.ADMIN_ACCESS) || permissions.has(PERMISSIONS.DELETE_GLOBAL) || isOwner
