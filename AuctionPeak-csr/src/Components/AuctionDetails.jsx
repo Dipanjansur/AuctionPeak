@@ -12,9 +12,6 @@ const AuctionDetails = () => {
   const auctionName = auction?.name
   const auctionItemDetails = auction?.items
   const auctionPermission=auction?.permission;
-  console.log("--------auctionPermission------")
-  console.log(auction)
-  console.log("--------auctionPermission------")
   const [layout, setlayout] = useState({ "GridCardsLayout": true, "HorizentalCardLayout": false })
   function buttonClicked(keyval) {
     if (keyval == "GridCardsLayout") {

@@ -3,6 +3,8 @@ const { Auction } = require("../models/Auctions");
 const Logging = require("../utils/Logger");
 const { Logging_level, Entity, Events, Models } = require("../utils/LoggerParams");
 const { log } = require('winston');
+const Items = require('../models/Items');
+const { getItemByAuctionId } = require('./ItemsController');
 
 // Define permissions constants
 const PERMISSIONS = {
@@ -10,18 +12,19 @@ const PERMISSIONS = {
   VIEW_BASIC: 'view_auction',    
   CREATE: 'create_auction',      
   UPDATE_AUCTION: 'update_auction', 
-  DELETE_AUCTION: 'delete_auction'  
-};
+  DELETE_AUCTION: 'delete_auction'
+};  
 
 /**
  * Helper: Determines the database 'where' clause for ACCESS/VISIBILITY.
  * Use this when fetching data.
  */
 const getReadScope = (user, permissions) => {
-  if (permissions.has(PERMISSIONS.ADMIN_ACCESS) || permissions.has(PERMISSIONS.VIEW_BASIC)) {
-    return {}; 
-  }
-  return { createdBy: user.usersId };
+  // if (permissions.has(PERMISSIONS.ADMIN_ACCESS) || permissions.has(PERMISSIONS.VIEW_BASIC)) {
+  //   return {}; 
+  // }
+  // return { createdBy: user.usersId };
+  return {}; // Currently allowing all auctions to be visible
 };
 
 
@@ -83,11 +86,13 @@ const getAuctionById = async (req, res) => {
       where: {
         AuctionId: auctionId,
         ...scope
-      }
+      },
     };
 
-    const auction = await Auction.findOne(query);
-
+    let auction = await Auction.findOne(query);
+    const auctionItems = await getItemByAuctionId(auctionId,user,permissions);
+    auction.dataValues.items = auctionItems;
+    console.log("Auction with items: ",auction);
     if (!auction) {
       Logging(Logging_level.warn, Entity.Controller, Events.READ_OP, `Auction not found or access denied: ${auctionId}`, Models.Auction);
       return res.status(404).json({ message: "Auction not found" });
@@ -95,7 +100,6 @@ const getAuctionById = async (req, res) => {
 
     // 2. Inject Permissions
     const responseData = attachItemPermissions(auction, user, permissions);
-
     Logging(Logging_level.info, Entity.Controller, Events.READ_OP, `Retrieved auction: ${auctionId}`, Models.Auction);
     return res.status(200).json(responseData);
 

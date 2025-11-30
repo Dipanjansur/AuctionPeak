@@ -8,7 +8,6 @@ const LogInComponent = () => {
     e.preventDefault();
     axios.post('http://localhost:8080/users/login', { ...loginvalues })
       .then(function (response) {
-        console.log(response)
         if (response.status == 200 && response.data.jwt != "") {
           localStorage.setItem("authToken", response.data.jwt)
           window.location.href = '/auctions'; // Redirect to login

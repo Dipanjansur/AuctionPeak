@@ -6,16 +6,16 @@ const Items = require("./Items");
 const Bids = sequelize.define('bids', {
   BidsId: {
     type: DataTypes.UUID,
-    defaultValue: DataTypes.UUIDV4,  // Automatically generate UUIDs
+    defaultValue: DataTypes.UUIDV4,
     allowNull: false,
     primaryKey: true,
   },
   amount: {
     type: DataTypes.FLOAT,
     allowNull: false
-  }
+  },
 }, {
-  timestamps: true
+  timestamps: true,
 });
 
 Bids.belongsTo(User, { foreignKey: 'userId', onDelete: 'CASCADE' });

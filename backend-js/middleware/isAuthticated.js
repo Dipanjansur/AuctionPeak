@@ -47,7 +47,6 @@ const isAuthticated = async (req, res, next) => {
     Logging(Logging_level.info, Entity.Middleware, Events.READ_OP, "UserRoles is valid for the user sent in the JWT token", Models.Roles)
     next();
   } catch (error) {
-    console.log(error)
     res.status(401).json({ error: 'Invalid token' });
   }
 }

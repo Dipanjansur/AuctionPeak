@@ -1,0 +1,55 @@
+{
+  "guest": {
+    "description": "Unauthenticated or non-paying visitors",
+    "permissions": [
+      "landing:view",
+      "search:public_content",
+      "auth:register",
+      "auth:login"
+    ]
+  },
+  "free tier": {
+    "description": "Registered users with basic access",
+    "inherits": ["guest"],
+    "permissions": [
+      "profile:own_update",
+      "project:create_limited",
+      "files:upload_small",
+      "community:read_comments"
+    ]
+  },
+  "verified": {
+    "description": "Users with identity verification (prevents spam)",
+    "inherits": ["free tier"],
+    "permissions": [
+      "community:post_comment",
+      "community:rate_content",
+      "marketplace:contact_seller",
+      "badge:display_verified"
+    ]
+  },
+  "paid": {
+    "description": "Standard monthly subscribers",
+    "inherits": ["verified"],
+    "permissions": [
+      "project:create_unlimited",
+      "files:upload_large",
+      "analytics:view_basic",
+      "ads:remove",
+      "support:priority_email"
+    ]
+  },
+  "corporate": {
+    "description": "Enterprise accounts with team capabilities",
+    "inherits": ["paid"],
+    "permissions": [
+      "team:manage_members",
+      "team:assign_roles",
+      "billing:download_invoices",
+      "analytics:view_advanced",
+      "api:generate_keys",
+      "audit_logs:view",
+      "support:dedicated_manager"
+    ]
+  }
+}

@@ -4,7 +4,6 @@ import HorizentalCardLayout from "../Layout/HorizentalCardLayout";
 import GenericCards from "../Components/GenericCards";
 
 const AuctionPage = () => {
-   console.log("I am here")
   const [layout, setlayout] = useState({ "GridCardsLayout": true, "HorizentalCardLayout": false })
   function buttonClicked(keyval) {
     if (keyval == "GridCardsLayout") {

@@ -44,9 +44,6 @@ const buttonConfigurations = {
 
 const AuctionActionButtons = ({ permissions, auctionId }) => {
   const [isLoading, setIsLoading] = useState(false);
-  console.log("--------permissions in action button------")
-  console.log(permissions)
-  console.log("--------permissions in action button------")
   const handleBookmarkAuction = async () => {
     try {
       const response = await axios.post(`/api/auctions/${auctionId}/bookmark`);
@@ -98,10 +95,6 @@ const AuctionActionButtons = ({ permissions, auctionId }) => {
   return (
     <div className="flex gap-3">
       {Object.entries(buttonConfigurations).map(([actionType, config]) => {
-       console.log("----------------")
-       console.log(actionType)
-       console.log(permissions)
-       console.log("----------------")
         return permissions.includes(actionType) && (
           <button
             key={actionType}

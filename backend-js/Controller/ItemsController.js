@@ -4,6 +4,7 @@ const Logging = require("../utils/Logger");
 const { v4: uuidv4 } = require("uuid");
 const { Logging_level, Entity, Events, Models } = require("../utils/LoggerParams");
 const { Op } = require("sequelize");
+const Bids = require("../models/Bids");
 
 const PERMISSIONS = {
   ADMIN_ACCESS: "all_items",
@@ -16,8 +17,8 @@ const PERMISSIONS = {
 
 const getReadScope = (user, permissions) => {
   if (permissions.has(PERMISSIONS.ADMIN_ACCESS) || permissions.has(PERMISSIONS.VIEW_BASIC)) {
-    return {}; 
-  }else{
+    return {};
+  } else {
     // if the basic view premission is not there then exit with a 403 staus code
     throw new Error("Insufficient permission to view items");
   }
@@ -29,7 +30,7 @@ const getReadScope = (user, permissions) => {
 
 const getWriteScope = (user, permissions, globalPermission) => {
   if (permissions.has(PERMISSIONS.ADMIN_ACCESS) || permissions.has(globalPermission)) {
-    return {}; 
+    return {};
   }
   return { Owner: user.usersId };
 };
@@ -43,11 +44,12 @@ const attachItemPermissions = (auctionItems, user, permissions) => {
   const auctionData = auctionItems.toJSON ? auctionItems.toJSON() : auctionItems;
   return {
     ...auctionData,
-    permission: {
-      isOwner: isOwner,
-      canUpdate: permissions.has(PERMISSIONS.ADMIN_ACCESS) || permissions.has(PERMISSIONS.UPDATE_GLOBAL) || isOwner,
-      canDelete: permissions.has(PERMISSIONS.ADMIN_ACCESS) || permissions.has(PERMISSIONS.DELETE_GLOBAL) || isOwner
-    }
+    permission: Array.from(new Set([
+      ...(isOwner ? Object.values(PERMISSIONS) : []),
+      permissions.has(PERMISSIONS.ADMIN_ACCESS) && 'all_items',
+      (permissions.has(PERMISSIONS.UPDATE_GLOBAL) || permissions.has(PERMISSIONS.UPDATE_AUCTION)) && 'update_items',
+      permissions.has(PERMISSIONS.DELETE_GLOBAL) && 'delete_items'
+    ].filter(Boolean)))
   };
 };
 
@@ -58,7 +60,7 @@ const getAllItems = async (req, res) => {
     const scope = getReadScope(user, permissions);
 
     let items = [];
-
+    // TODO: check does this work??
     // If auction filter present
     if (req.query.auction) {
       const links = await AuctionItems.findAll({
@@ -111,6 +113,15 @@ const getAllItems = async (req, res) => {
   }
 };
 
+
+const getItemByAuctionId = async (auctionId, user, permissions) => {
+  const auctionItems = await Items.findAll({ where: { auctionId: auctionId } });
+  const responseData = auctionItems.map(item =>
+    attachItemPermissions(item, user, permissions)
+  );
+  return responseData;
+}
+
 // GET ITEM BY ID
 const getItemById = async (req, res) => {
   try {
@@ -123,15 +134,20 @@ const getItemById = async (req, res) => {
       where: {
         ItemId,
         ...scope
-      }
+      },
     });
-
+    const itemBids=await Bids.findAll({
+      where:{
+        itemId:ItemId
+      },
+    });
+    item.dataValues.bids=itemBids;
     if (!item) {
       return res.status(404).json({ message: "Item not found" });
     }
 
     const responseData = attachItemPermissions(item, user, permissions);
-
+    
     return res.status(200).json(responseData);
   } catch (err) {
     Logging(
@@ -152,8 +168,8 @@ const createNewItem = async (req, res) => {
     const payload = req.body;
 
     const canCreate =
-      permissions.includes(PERMISSIONS.CREATE) ||
-      permissions.includes(PERMISSIONS.ADMIN_ACCESS);
+      permissions.has(PERMISSIONS.CREATE) ||
+      permissions.has(PERMISSIONS.ADMIN_ACCESS);
 
     if (!canCreate) {
       return res.status(403).json({ message: "Insufficient permission to create item" });
@@ -254,5 +270,6 @@ module.exports = {
   getItemById,
   createNewItem,
   updateItemData,
-  deleteItem
+  deleteItem,
+  getItemByAuctionId
 };

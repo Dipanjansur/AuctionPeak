@@ -8,6 +8,7 @@ const {
   mostPaidBidsFilter,
   mostParticipantsBidsFilter,
 } = require("../utils/bidsfilters");
+const Items = require("../models/Items");
 
 const PERMISSIONS = {
   ADMIN_ACCESS: "all_bids",
@@ -40,22 +41,15 @@ const getWriteScope = (user, permissions, globalPermission) => {
 
 const attachItemPermissions = (bid, user, permissions) => {
   const isOwner = bid.createdBy === user.userId;
-
   const data = bid.toJSON ? bid.toJSON() : bid;
 
-  return {
+  return {  
     ...data,
-    permission: {
-      isOwner,
-      canUpdate:
-        permissions.has(PERMISSIONS.ADMIN_ACCESS) ||
-        permissions.has(PERMISSIONS.UPDATE_GLOBAL) ||
-        isOwner,
-      canDelete:
-        permissions.has(PERMISSIONS.ADMIN_ACCESS) ||
-        permissions.has(PERMISSIONS.DELETE_GLOBAL) ||
-        isOwner,
-    },
+    permission:Array.of(new Set([...(isOwner ? Object.values(PERMISSIONS) : []),
+    permissions.has(PERMISSIONS.ADMIN_ACCESS) && 'all_bids',
+    (permissions.has(PERMISSIONS.UPDATE_GLOBAL)) && 'update_bids',
+    permissions.has(PERMISSIONS.DELETE_GLOBAL) && 'delete_bids'
+  ].filter(Boolean)))
   };
 };
 
@@ -93,7 +87,7 @@ const getAllBids = async (req, res) => {
 };
 
 const getBidsById = async (req, res) => {
-  try {
+  // try {
     const { BidsId } = req.params;
     const { user, permissions } = req;
 
@@ -113,7 +107,7 @@ const getBidsById = async (req, res) => {
     }
 
     return res.status(200).json(attachItemPermissions(bid, user, permissions));
-  } catch (err) {
+  // } catch (err) {
     Logging(
       Logging_level.error,
       Entity.Controller,
@@ -122,33 +116,41 @@ const getBidsById = async (req, res) => {
       Models.Bids
     );
     return res.status(500).json({ message: "Internal Server Error" });
-  }
+  // }
 };
 
 const createNewBids = async (req, res) => {
   try {
     const { user, permissions } = req;
-    const payload = req.body;
+    const {amount,ItemId} = req.body;
 
     const canCreate =
-      permissions.includes(PERMISSIONS.CREATE) ||
-      permissions.includes(PERMISSIONS.ADMIN_ACCESS);
+      permissions.has(PERMISSIONS.CREATE) ||
+      permissions.has(PERMISSIONS.ADMIN_ACCESS);
 
     if (!canCreate)
       return res
         .status(403)
         .json({ message: "Insufficient permissions to create bid" });
 
-    if (!payload.amount)
+    if (!amount)
       return res.status(400).json({ message: "Missing bid amount" });
 
+    const ItemDetails=await Items.findOne({
+      where:{
+        ItemId:ItemId
+      }
+    });
+    console.log("ItemDetails",ItemDetails.dataValues);
+    console.log("user",user);
     const createdBid = await Bids.create({
       BidsId: uuidv4(),
-      amount: payload.amount,
-      createdBy: user.userId,
-      AuctionId: payload.AuctionId,
+      amount: amount,
+      userId: user.dataValues.usersId,
+      itemId: ItemId,
+      auctionId: ItemDetails.dataValues.auctionId,
     });
-
+    console.log("createdBid",createdBid);
     Logging(
       Logging_level.info,
       Entity.Controller,
