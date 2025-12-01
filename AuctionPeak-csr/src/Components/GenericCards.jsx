@@ -3,17 +3,23 @@ import GridAuctionCard from './GridAuctionCard'
 import HorizentalItemCard from './HorizentalItemCard'
 import PropTypes from 'prop-types';
 import VeritalItemCards from './VeritalItemCards';
+import HorizentalBidsCard from './HorizentalBidsCard';
+import VerticalBidsCard from './VerticalBidsCard';
 
-const GenericCards = ({ type, data }) => {
+const GenericCards = ({ type}) => {
   switch (type) {
     case "Auction_Horizental":
       return <HorizentalAuctionCard />
     case "Auction_Vertical":
       return <GridAuctionCard/>
     case "Items_Horizental":
-      return <HorizentalItemCard data={data} />
+      return <HorizentalItemCard />
     case "Items_Vertical":
-      return <VeritalItemCards data={data} />
+      return <VeritalItemCards />
+    case "Bids_Horizental":
+      return <HorizentalBidsCard/>
+    case "Bids_Vertical":
+      return <VerticalBidsCard/>
   }
 }
 GenericCards.propTypes = {

@@ -1,19 +1,9 @@
-import { useEffect, useState } from "react";
+import {useState } from "react";
 import GridCardsLayout from "../Layout/GridCardsLayout";
 import HorizentalCardLayout from "../Layout/HorizentalCardLayout";
 import GenericCards from "../Components/GenericCards";
-import { useDispatch, useSelector } from "react-redux";
-import { fetchItems } from "../Slices/ItemsSlice";
-
 const ItemsPage = () => {
-  const items = useSelector((state) => state.item.Items);
-  const itemsList = items.message
-  const dispatch = useDispatch();
-  useEffect(() => {
-    dispatch(fetchItems())
-  }, [dispatch])
   const [layout, setlayout] = useState({ "GridCardsLayout": true, "HorizentalCardLayout": false })
-
   function buttonClicked(keyval) {
     if (keyval == "GridCardsLayout") {
       setlayout({ "GridCardsLayout": true, "HorizentalCardLayout": false })
@@ -31,8 +21,8 @@ const ItemsPage = () => {
           HorizantalLayout
         </button>
       </div>
-      {layout.GridCardsLayout && <GridCardsLayout ><GenericCards type="Bids_Horizental" data={itemsList} /></GridCardsLayout>}
-      {layout.HorizentalCardLayout && <HorizentalCardLayout ><GenericCards type="Bids_Vertical" data={itemsList} /></HorizentalCardLayout>}
+      {layout.GridCardsLayout && <GridCardsLayout ><GenericCards type="Bids_Horizental"/></GridCardsLayout>}
+      {layout.HorizentalCardLayout && <HorizentalCardLayout ><GenericCards type="Bids_Vertical"/></HorizentalCardLayout>}
     </>
   );
 }

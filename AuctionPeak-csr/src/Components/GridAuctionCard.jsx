@@ -13,10 +13,13 @@ const GridAuctionCard = () => {
   if (!auctions || auctions.length === 0) {
     return <div>No auctions available</div>;
   }
-  return <ul>{auctions.map((item) =>
+  return (
+  <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 p-4 justify-items-center" role="list">
+    {auctions.map((item) =>
     <AuctionCard key={item.AuctionId} item={item} />
   )}
   </ul>
+  )
 }
 const AuctionCard = ({ item }) => {
   const navigate = useNavigate();

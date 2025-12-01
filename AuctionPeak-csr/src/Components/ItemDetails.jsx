@@ -3,9 +3,8 @@ import { useState, useEffect, useCallback } from 'react';
 import BidForm from './BidForm';
 import Baseaxios from "../utils/axiosConstruct"; 
 
-// --- ⚙️ Configuration ---
 const DEFAULT_PLACEHOLDER_URL = 'https://picsum.photos/400/300';
-const ROTATION_INTERVAL_MS = 2000; 
+const ROTATION_INTERVAL_MS = 20000; 
 
 const ItemDetails = () => {
   let { ItemId } = useParams();
