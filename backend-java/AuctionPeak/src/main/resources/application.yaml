@@ -1,0 +1,36 @@
+spring:
+#  data seeding stopped
+  sql:
+    init:
+      mode: never
+  docker:
+    compose:
+      enabled: false
+  application:
+    name: AuctionPeak
+  datasource:
+    url: jdbc:postgresql://localhost:8000/AuctionPeak
+    username: postgres
+    password: postgres
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    #  data seeding stopped
+    defer-datasource-initialization: false
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+users:
+  ids:
+    locked:
+    expired:
+    credentials-expired:
+    disabled:
+
+jwt:
+  secret: v7^X?E4>{+3bG#n8cv[U&^9`x5kAwF%n2c4?(3sa$4Ji**sOc+
+  expiration: 86400
