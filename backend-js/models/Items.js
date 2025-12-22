@@ -34,6 +34,14 @@ const Items = sequelize.define(
       validate: {
         isUrl: true
       }
+    },
+    BiddingStartTime: {
+      type: DataTypes.DATE,
+      allowNull: false,
+    },
+    BiddingEndTime: {
+      type: DataTypes.DATE,
+      allowNull: false,
     }
   },
 );

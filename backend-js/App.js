@@ -18,6 +18,7 @@ const morgan = require("morgan");
 const Logging = require('./utils/Logger');
 const { Events, Logging_level, Entity } = require('./utils/LoggerParams');
 const Permission = require('./models/Permissions');
+const ErrorHandler = require('./middleware/ErrorHnadlers');
 //logger config
 morgan.token('body', (req, res) => JSON.stringify(req.body));
 const morganFormat = ':method :url :status :response-time ms - :body - :req[body] - :req[content-length] - :res[content-length] - :res[body]';
@@ -36,15 +37,13 @@ app.get('/health-check', (req, res) => {
 })
 // Routes
 app.use('/users', UsersRouter)
-app.use('/auction', AuctionRouter)
+app.use('/auctions', AuctionRouter)
 app.use('/items', ItemsRouter)
 app.use('/statics', StaticPageRouter)
 app.use('/bids', BidsRouter)
 //Global error handler
-app.use((err, req, res, next) => {
-  console.error(err.stack)
-  res.status(500).send('Something bad happened!')
-})
+//Global error handler
+app.use(ErrorHandler);
 
 app.listen(port, async () => {
   try {

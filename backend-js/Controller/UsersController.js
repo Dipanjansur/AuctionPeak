@@ -1,124 +1,142 @@
-const Users = require("../models/Users");
-const bcrypt = require('bcryptjs');
-const { v4: uuidv4 } = require('uuid');
-const { generateAuthToken } = require("../utils/JwtHelper");
-const { Logging_level, Entity, Events, Models } = require("../utils/LoggerParams");
+const yup = require('yup');
+const UsersService = require("../services/UsersService");
+const BadRequestError = require('../customerror/BadRequest');
+const NotFoundError = require('../customerror/NotFound');
+const ForbiddenError = require('../customerror/Forbidden');
+const ValidationError = require('../customerror/Validation');
+const UnauthorizedError = require('../customerror/Unauthorized');
+
+// Validation Schemas
+const signInSchema = yup.object({
+  username: yup.string().required('Username is required'),
+  password: yup.string().required('Password is required').min(6, 'Password must be at least 6 characters'),
+  firstName: yup.string().required('First name is required'),
+  lastName: yup.string().required('Last name is required'),
+  email: yup.string().email('Invalid email').required('Email is required'),
+  bio: yup.string()
+});
+
+const loginSchema = yup.object({
+  email: yup.string().email('Invalid email').required('Email is required'),
+  password: yup.string().required('Password is required')
+});
+
+const updateProfileSchema = yup.object({
+  username: yup.string(),
+  firstName: yup.string(),
+  lastName: yup.string(),
+  bio: yup.string()
+});
 
 const signInUser = async (req, res) => {
-  const { username, password, firstName, lastName, email, bio } = req.body;
+  const payload = req.body;
 
   try {
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
-
-    const newUser = await Users.create({
-      usersId: uuidv4(),
-      username,
-      firstName,
-      lastName,
-      email,
-      bio,
-      password: hashedPassword
-    });
-    const jwttoken = generateAuthToken(newUser);
-    res.status(201).json({ message: "User created successfully", userId: newUser.usersId, jwt: jwttoken });
-  } catch (error) {
-    res.status(500).json({ message: "Error creating user", error: error.message });
+    await signInSchema.validate(payload, { abortEarly: false });
+  } catch (validationError) {
+    throw new ValidationError(validationError.errors.join(', '));
   }
+
+  // Pass errors from Service (e.g. database unique constraint) - Express catches them.
+  // ErrorHandler handles 'SequelizeUniqueConstraintError' automatically.
+  const result = await UsersService.signInUser(payload);
+  return res.status(201).json({ message: "User created successfully", ...result });
 }
 
 const loginUser = async (req, res) => {
   const { email, password } = req.body;
 
   try {
-    const user = await Users.findOne({
-      where: {
-        email: email
-      },
-    });
+    await loginSchema.validate({ email, password }, { abortEarly: false });
+  } catch (validationError) {
+    throw new ValidationError(validationError.errors.join(', '));
+  }
 
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
+  try {
+    const result = await UsersService.loginUser(email, password);
+
+    if (!result) {
+      throw new NotFoundError("User not found");
     }
 
-    const isMatch = await bcrypt.compare(password, user.password);
-
-    if (!isMatch) {
-      return res.status(400).json({ message: "Invalid password" });
-    }
-    const jwttoken = generateAuthToken(user);
-    res.status(200).json({ userId: user.usersId, jwt: jwttoken });
+    return res.status(200).json(result);
   } catch (error) {
-    res.status(500).json({ message: "Error logging in", error: error.message });
+    if (error.message === "Invalid password") {
+      throw new BadRequestError("Invalid password");
+    }
+    throw error;
   }
 }
 
 const getUsersById = async (req, res) => {
   const { userId } = req.params;
-  // Assuming you will process and validate auction update data here
-  try {
-    const retrievedUser = await Users.findOne({
-      where: {
-        usersId: userId,
-      },
-    });
-    if (retrievedUser == null) {
-      Logging(Logging_level.warn, Entity.Controller, Events.READ_OP, Models.Items, "no entity found getItemById")
-      return res.status(400).json({ message: "no entity found" })
-    }
-    Logging(Logging_level.info, Entity.Controller, Events.READ_OP, Models.Items, ` got data getItemById${retrievedItem}`)
-    return res.status(200).json({ message: retrievedUser });
+
+  if (!userId) {
+    throw new BadRequestError("User ID is required");
   }
-  catch (err) {
-    Logging(Logging_level.error, Entity.Controller, Events.READ_OP, Models.Items, `something went wrong in getItemById${err}`)
-    return res.status(500).json({ message: "something went wrong" })
+
+  const retrievedUser = await UsersService.getUserById(userId);
+
+  if (!retrievedUser) {
+    throw new NotFoundError("User not found");
   }
+
+  return res.status(200).json({ message: retrievedUser });
 }
 
 const getAllUsers = async (req, res) => {
-  try {
-    const retrievedUser = await Users.findAll();
-    if (retrievedUser == null) {
-      Logging(Logging_level.warn, Entity.Controller, Events.READ_OP, Models.Items, "no entity found getAllItems")
-      return res.status(400).json({ message: "no entity found" })
-    }
-    Logging(Logging_level.info, Entity.Controller, Events.READ_OP, Models.Items, ` got data getAllItems${retrievedAuction}`)
-    return res.status(200).json({ message: retrievedUser })
+  const users = await UsersService.getAllUsers();
+
+  // Service returns empty array if no users.
+  if (!users || users.length === 0) {
+    return res.status(200).json({ message: [] });
   }
-  catch (err) {
-    Logging(Logging_level.error, Entity.Controller, Events.READ_OP, Models.Items, `something went wrong in getAllItems${err}`)
-    return res.status(500).json({ message: "something went wrong" })
-  }
+
+  return res.status(200).json({ message: users });
 }
 
 const updateProfileData = async (req, res) => {
   const { userId } = req.params;
-  // Assuming you will handle auction deletion here
-  res.status(200).json({ message: `updateProfileData with ID: ${userId}` });
+  const updates = req.body;
+
+  if (!userId) {
+    throw new BadRequestError("User ID is required");
+  }
+
+  try {
+    await updateProfileSchema.validate(updates, { abortEarly: false });
+  } catch (error) {
+    throw new ValidationError(error.errors.join(', '));
+  }
+
+  const updatedUser = await UsersService.updateProfileData(userId, updates);
+  if (!updatedUser) {
+    throw new NotFoundError("User not found");
+  }
+  return res.status(200).json({ message: updatedUser });
 }
+
 const deleteUsers = async (req, res) => {
   const { userId } = req.params;
-  // Assuming you will handle auction deletion here
-  try {
-    const RetrivedUser = await Users.destroy({
-      where: {
-        usersId: userId,
-      },
-    });
-    if (RetrivedUser == 1) {
-      Logging(Logging_level.info, Entity.Controller, Events.UPDATE_OP, Models.Items, `deleted successfully deleteItem`)
-      return res.status(200).json({ message: "sucessfully deleted" });
-    } else {
-      Logging(Logging_level.warn, Entity.Controller, Events.UPDATE_OP, Models.Items, "no entity found or already deleted deleteItem")
-      return res.status(200).json({ message: RetrivedUser });
-    }
+
+  if (!userId) {
+    throw new BadRequestError("User ID is required");
   }
-  catch (err) {
-    Logging(Logging_level.error, Entity.Controller, Events.UPDATE_OP, Models.Items, `something unexpected deleteItem ${err}`)
-    res.status(500).json({ message: "Something Went Wrong" });
+
+  const success = await UsersService.deleteUser(userId);
+
+  if (success) {
+    return res.status(200).json({ message: "Successfully deleted" });
+  } else {
+    throw new NotFoundError("User not found or already deleted");
   }
 }
 
 module.exports = {
-  signInUser, loginUser, getAllUsers, getUsersById, updateProfileData, deleteUsers
+  signInUser,
+  loginUser,
+  getAllUsers,
+  getUsersById,
+  updateProfileData,
+  deleteUsers
 }

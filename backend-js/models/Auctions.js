@@ -41,10 +41,10 @@ const Auction = sequelize.define('auction', {
 }, {
   timestamps: true
 });
-Auction.belongsTo(User, { 
-  as: 'creator', 
+Auction.belongsTo(User, {
+  as: 'creator',
   foreignKey: 'createdBy',
-  onDelete: 'CASCADE' 
+  onDelete: 'CASCADE'
 });
 const AuctionParticipants = sequelize.define('AuctionParticipants', {}, { timestamps: false });
 Auction.belongsToMany(User, { through: 'AuctionParticipants', as: 'participants', foreignKey: 'auctionId' });
