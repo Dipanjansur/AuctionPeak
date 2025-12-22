@@ -20,6 +20,7 @@ public class AuctionController {
     private AuctionService auctionService;
 
     @GetMapping
+    @PreAuthorize("hasAuthority('VIEW_AUCTION')")
     public List<AuctionResponse> getAllAuctions() {
         return auctionService.getAllAuctions();
     }

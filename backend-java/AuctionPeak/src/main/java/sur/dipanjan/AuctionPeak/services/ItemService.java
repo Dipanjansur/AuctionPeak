@@ -14,14 +14,13 @@ import sur.dipanjan.AuctionPeak.repository.AuctionRepository;
 import sur.dipanjan.AuctionPeak.repository.ItemRepository;
 import sur.dipanjan.AuctionPeak.services.customExceptions.ForbiddenError;
 import sur.dipanjan.AuctionPeak.services.customExceptions.NotFoundError;
-import sur.dipanjan.AuctionPeak.services.customExceptions.UnauthorizedError;
-import sur.dipanjan.AuctionPeak.repository.UserRepository;
+import sur.dipanjan.AuctionPeak.services.utils.UserUtils;
 
 import java.util.List;
 
 @Service
 public class ItemService {
-    private static final Logger LOGGER= LoggerFactory.getLogger(ItemService.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ItemService.class);
 
     @Autowired
     private ItemRepository itemRepository;
@@ -30,19 +29,7 @@ public class ItemService {
     private AuctionRepository auctionRepository;
 
     @Autowired
-    private UserRepository userRepository;
-
-    private User getAuthenticatedUser() {
-        Authentication authentication = org.springframework.security.core.context.SecurityContextHolder.getContext()
-                .getAuthentication();
-        if (authentication == null || !authentication.isAuthenticated()
-                || authentication.getPrincipal().equals("anonymousUser")) {
-            throw new UnauthorizedError("User is not authenticated");
-        }
-        String username = authentication.getName();
-        return userRepository.findByUsername(username)
-                .orElseThrow(() -> new UnauthorizedError("User not found"));
-    }
+    private UserUtils userUtils;
 
     public List<Item> getAllItems(String query) {
         Authentication authentication = org.springframework.security.core.context.SecurityContextHolder.getContext()
@@ -53,7 +40,7 @@ public class ItemService {
         if (isAdmin) {
             return itemRepository.findAll();
         }
-        User user = getAuthenticatedUser();
+        User user = userUtils.getAuthenticatedUser();
         return itemRepository.findByOwner(user);
     }
 
@@ -70,7 +57,7 @@ public class ItemService {
     }
 
     public Item createNewItem(ItemCreateRequest request) {
-        User user = getAuthenticatedUser();
+        User user = userUtils.getAuthenticatedUser();
 
         Item item = new Item();
         item.setItemName(request.getItemName());

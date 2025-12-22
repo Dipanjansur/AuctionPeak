@@ -21,6 +21,7 @@ public class BidController {
     private BidService bidService;
 
     @GetMapping
+    @PreAuthorize("hasAuthority('view_bid')")
     public List<Bid> getAllBids() {
         return bidService.getAllBids();
     }

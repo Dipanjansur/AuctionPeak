@@ -1,5 +1,7 @@
 package sur.dipanjan.AuctionPeak.controllers;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -10,6 +12,7 @@ import sur.dipanjan.AuctionPeak.services.customExceptions.*;
 
 @RestControllerAdvice
 public class GlobalCatchExcept {
+    private static final Logger LOGGER= LoggerFactory.getLogger(GlobalCatchExcept.class);
 
     @ExceptionHandler(BadRequestError.class)
     public ResponseEntity<ErrorResponse> handleBadRequest(BadRequestError ex) {
@@ -42,6 +45,7 @@ public class GlobalCatchExcept {
     }
 
     private ResponseEntity<ErrorResponse> buildResponse(String message, HttpStatus status) {
+        LOGGER.error("Exception: " + message);
         ErrorResponse response = new ErrorResponse(status.getReasonPhrase(), message, status.value());
         return new ResponseEntity<>(response, status);
     }

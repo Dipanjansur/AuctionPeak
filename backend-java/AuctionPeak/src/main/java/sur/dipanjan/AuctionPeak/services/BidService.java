@@ -11,10 +11,10 @@ import sur.dipanjan.AuctionPeak.models.BidCreateRequest;
 import sur.dipanjan.AuctionPeak.models.BidUpdateRequest;
 import sur.dipanjan.AuctionPeak.repository.BidRepository;
 import sur.dipanjan.AuctionPeak.repository.ItemRepository;
-import sur.dipanjan.AuctionPeak.repository.UserRepository;
+
 import sur.dipanjan.AuctionPeak.services.customExceptions.ForbiddenError;
 import sur.dipanjan.AuctionPeak.services.customExceptions.NotFoundError;
-import sur.dipanjan.AuctionPeak.services.customExceptions.UnauthorizedError;
+import sur.dipanjan.AuctionPeak.services.utils.UserUtils;
 
 import java.util.List;
 
@@ -28,18 +28,7 @@ public class BidService {
     private ItemRepository itemRepository;
 
     @Autowired
-    private UserRepository userRepository;
-
-    private User getAuthenticatedUser() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || !authentication.isAuthenticated()
-                || authentication.getPrincipal().equals("anonymousUser")) {
-            throw new UnauthorizedError("User is not authenticated");
-        }
-        String username = authentication.getName();
-        return userRepository.findByUsername(username)
-                .orElseThrow(() -> new UnauthorizedError("User not found"));
-    }
+    private UserUtils userUtils;
 
     public List<Bid> getAllBids() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -49,7 +38,7 @@ public class BidService {
         if (isAdmin) {
             return bidRepository.findAll();
         }
-        User user = getAuthenticatedUser();
+        User user = userUtils.getAuthenticatedUser();
         return bidRepository.findByUserId(user);
     }
 
@@ -59,7 +48,7 @@ public class BidService {
     }
 
     public Bid createNewBid(BidCreateRequest request) {
-        User user = getAuthenticatedUser();
+        User user = userUtils.getAuthenticatedUser();
 
         Item item = itemRepository.findById(request.getItemId())
                 .orElseThrow(() -> new NotFoundError("Item not found"));

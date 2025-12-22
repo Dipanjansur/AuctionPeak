@@ -26,11 +26,12 @@ public class WebSecurityConfig {
                 .cors(AbstractHttpConfigurer::disable)
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auctions/**").permitAll()
-                        .requestMatchers("/bids/**").permitAll()
-                        .requestMatchers("/items/**").permitAll()
-                        .requestMatchers("/users/**").permitAll()
-                        .anyRequest().permitAll());
+                        .requestMatchers("/auctions/**").hasAuthority("VIEW_AUCTION")
+                        .requestMatchers("/bids/**").hasAuthority("VIEW_BID_HISTORY")
+                        .requestMatchers("/items/**").hasAuthority("VIEW_ITEM")
+                        .requestMatchers("/users/login", "/users/signup").permitAll()
+                        .requestMatchers("/users/**").authenticated()
+                        .anyRequest().authenticated());
 
         return http.build();
     }

@@ -11,12 +11,11 @@ import sur.dipanjan.AuctionPeak.entities.User;
 import sur.dipanjan.AuctionPeak.models.AuctionCreateRequest;
 import sur.dipanjan.AuctionPeak.models.AuctionUpdateRequest;
 import sur.dipanjan.AuctionPeak.repository.AuctionRepository;
-import sur.dipanjan.AuctionPeak.repository.UserRepository;
+
 import sur.dipanjan.AuctionPeak.services.customExceptions.BadRequestError;
 
 import sur.dipanjan.AuctionPeak.services.customExceptions.NotFoundError;
-import sur.dipanjan.AuctionPeak.services.customExceptions.UnauthorizedError;
-
+import sur.dipanjan.AuctionPeak.services.utils.UserUtils;
 import sur.dipanjan.AuctionPeak.models.AuctionResponse;
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -26,23 +25,12 @@ import java.util.stream.Collectors;
 
 @Service
 public class AuctionService {
-    private static final Logger LOGGER= LoggerFactory.getLogger(AuctionService.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(AuctionService.class);
     @Autowired
     private AuctionRepository auctionRepository;
 
     @Autowired
-    private UserRepository userRepository;
-
-    private User getAuthenticatedUser() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || !authentication.isAuthenticated()
-                || authentication.getPrincipal().equals("anonymousUser")) {
-            throw new UnauthorizedError("User is not authenticated");
-        }
-        String username = authentication.getName();
-        return userRepository.findByUsername(username)
-                .orElseThrow(() -> new UnauthorizedError("User not found"));
-    }
+    private UserUtils userUtils;
 
     public List<AuctionResponse> getAllAuctions() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -53,7 +41,7 @@ public class AuctionService {
         if (isAdmin) {
             auctions = auctionRepository.findAll();
         } else {
-            User user = getAuthenticatedUser();
+            User user = userUtils.getAuthenticatedUser();
             auctions = auctionRepository.findByCreatedBy(user);
         }
         return auctions.stream().map(this::mapToAuctionResponse).collect(Collectors.toList());
@@ -66,7 +54,7 @@ public class AuctionService {
     }
 
     public AuctionResponse createAuction(AuctionCreateRequest request) {
-        User user = getAuthenticatedUser();
+        User user = userUtils.getAuthenticatedUser();
         if (request.getEndTime().isBefore(request.getStartTime())) {
             throw new BadRequestError("End time must be after start time");
         }

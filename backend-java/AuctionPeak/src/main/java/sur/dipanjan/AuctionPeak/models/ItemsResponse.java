@@ -30,4 +30,6 @@ public class ItemsResponse {
     // Bids Relation
     private List<BidsResponse> bids;
     private List<Long> bidIds;
+
+    private Permissions permissions;
 }

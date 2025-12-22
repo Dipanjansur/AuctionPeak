@@ -12,6 +12,7 @@ public class BidsResponse {
     private UsersResponse user;
     private Long userId;
     private String username;
+    private Permissions permissions;
 
     // Item Relation
     private ItemsResponse item;

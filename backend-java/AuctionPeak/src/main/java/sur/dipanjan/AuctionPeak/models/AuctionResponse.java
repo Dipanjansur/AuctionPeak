@@ -28,7 +28,7 @@ public class AuctionResponse {
     // Auctioned Items Relation
     private List<ItemsResponse> auctionedItemsDetails;
     private List<LazyItemsResponse> auctionedItems;
-
+    private Permissions permissions;
     // Participants Relation
     private List<UsersResponse> participantsDetails;
     private List<LazyParticipantsResponse> participants;

@@ -21,6 +21,7 @@ public class ItemController {
     private ItemService itemService;
 
     @GetMapping
+    @PreAuthorize("hasAuthority('view_item')")
     public List<Item> getAllItems(@RequestParam(required = false) String query) {
         List<Item> items = itemService.getAllItems(query);
         if (items == null) {

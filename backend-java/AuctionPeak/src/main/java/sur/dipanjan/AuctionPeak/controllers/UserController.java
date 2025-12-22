@@ -3,6 +3,7 @@ package sur.dipanjan.AuctionPeak.controllers;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import sur.dipanjan.AuctionPeak.models.AuthResponse;
 import sur.dipanjan.AuctionPeak.models.LoginRequest;
@@ -47,6 +48,7 @@ public class UserController {
     }
 
     @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public List<UserResponse> getAllUsers() {
         return userService.getAllUsers();
     }
