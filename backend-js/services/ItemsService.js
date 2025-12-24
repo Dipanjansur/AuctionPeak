@@ -97,11 +97,12 @@ const markActivity = (item) => {
 }
 
 const getAllItems = async (user, permissions, queryParams) => {
-    const scope = getReadScope(user, permissions);
+    const scope = await getReadScope(user, permissions);
 
     let items = [];
     // TODO: check does this work??
     // If auction filter present
+    const canCreateItem = permissions.has(globalPermission.CREATE) || permissions.has(PERMISSIONS.ADMIN_ACCESS);
     if (queryParams.auction) {
         const links = await AuctionItems.findAll({
             where: { auctionId: queryParams.auction },
@@ -113,7 +114,6 @@ const getAllItems = async (user, permissions, queryParams) => {
         }
 
         const itemIds = links.map(x => x.dataValues.itemItemId);
-        const canCreateItem = permissions.has(globalPermission.CREATE) || permissions.has(PERMISSIONS.ADMIN_ACCESS);
         items = await Items.findAll({
             where: {
                 ItemId: { [Op.in]: itemIds },
@@ -158,7 +158,7 @@ const getItemByAuctionId = async (auctionId, user, permissions) => {
 
 // TODO: add userName here maybe AuctionId and AucionName
 const getItemById = async (ItemId, user, permissions) => {
-    const scope = getReadScope(user, permissions);
+    const scope = await getReadScope(user, permissions);
 
     const item = await Items.findOne({
         where: {

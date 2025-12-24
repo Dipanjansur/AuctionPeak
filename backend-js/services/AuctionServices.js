@@ -7,16 +7,14 @@ const { formatTimeDifference } = require("../utils/timeUtils");
 const globalAuctionPermission = {
     CREATE: "create_auction",
 }
-
+//TODO: if all_acution is going then not send view , update,delete 
 // Define permissions constants
 const PERMISSIONS = {
     ADMIN_ACCESS: "all_auction",
     VIEW_BASIC: "view_auction",
     UPDATE_AUCTION: "update_auction",
     DELETE_AUCTION: "delete_auction",
-    // Inferred missing permissions from usage
-    UPDATE_GLOBAL: "update_global_auction",
-    DELETE_GLOBAL: "delete_global_auction",
+    ADD_ITEMS: "add_items",
     JOIN_AUCTION: "join_auction",
     LEAVE_AUCTION: "leave_auction",
 };
@@ -60,11 +58,11 @@ const attachItemPermissions = async (auction, user, permissions) => {
             new Set(
                 [
                     ...(isOwner ? Object.values(PERMISSIONS) : []),
-                    permissions.has(PERMISSIONS.ADMIN_ACCESS) && "all_auction",
+                    permissions.has(PERMISSIONS.ADMIN_ACCESS) && ["all_auction", "add_items"],
                     (permissions.has(PERMISSIONS.UPDATE_GLOBAL) ||
                         permissions.has(PERMISSIONS.UPDATE_AUCTION)) &&
                     "update_auction",
-                    permissions.has(PERMISSIONS.DELETE_GLOBAL) && "delete_auction",
+                    permissions.has(PERMISSIONS.DELETE_AUCTION) && "delete_auction",
                     !isParticipant && "join_auction",
                     isParticipant && "leave_auction",
                 ].filter(Boolean)
@@ -79,7 +77,7 @@ const markActivity = (auction) => {
     if (auction.endTime > currentTime && auction.startTime < currentTime) {
         const diff = auction.endTime - currentTime;
         return {
-            active: true,
+            active: 0,
             activeTime: "Auction ending in " + formatTimeDifference(diff)
         };
     }
@@ -87,7 +85,7 @@ const markActivity = (auction) => {
     if (auction.endTime < currentTime) {
         const diff = currentTime - auction.endTime;
         return {
-            active: false,
+            active: -1,
             activeTime: "Auction ended " + formatTimeDifference(diff) + " ago"
         };
     }
@@ -95,13 +93,13 @@ const markActivity = (auction) => {
     if (auction.startTime > currentTime) {
         const diff = auction.startTime - currentTime;
         return {
-            active: false,
+            active: 1,
             activeTime: "Auction starting in: " + formatTimeDifference(diff)
         };
     }
     // Fallback if needed (though cases above cover standard timelines)
     return {
-        active: false,
+        active: 2,
         activeTime: "Status Unknown"
     };
 }
@@ -134,14 +132,14 @@ const getAllAuctions = async (user, permissions) => {
 const getAuctionById = async (auctionId, user, permissions) => {
     // 1. Determine Visibility
     const scope = getReadScope(user, permissions);
-    const query = {
+    const auction_query = {
         where: {
             AuctionId: auctionId,
             ...scope
         },
-    };
 
-    let auction = await Auction.findOne(query);
+    };
+    let auction = await Auction.findOne(auction_query);
     const permission = await attachItemPermissions(auction, user, permissions)
     const active = markActivity(auction)
 
@@ -158,8 +156,6 @@ const getAuctionById = async (auctionId, user, permissions) => {
 
     const auctionItems = await getItemByAuctionId(auctionId, user, permissions);
     auction.dataValues.items = auctionItems;
-
-    // 2. Inject Permissions
     Logging(
         Logging_level.info,
         Entity.Service,
@@ -185,6 +181,7 @@ const createAuction = async (user, permissions, payload) => {
         );
         throw new Error("Insufficient permissions to create an auction");
     }
+    const endTime = payload.startTime + payload.duration;
 
     const newAuction = await Auction.create({
         AuctionId: uuidv4(),
@@ -192,6 +189,7 @@ const createAuction = async (user, permissions, payload) => {
         AuctionDetails: payload.AuctionDetails,
         startTime: payload.startTime,
         endTime: payload.endTime,
+        auctionPic: payload.auctionPic,
         createdBy: user.userId,
     });
 

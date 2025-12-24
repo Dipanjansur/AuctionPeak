@@ -9,9 +9,9 @@ const ValidationError = require('../customerror/Validation');
 const createAuctionSchema = yup.object({
   name: yup.string().required('Name is required'),
   startTime: yup.date().required('Start time is required'),
-  endTime: yup.date().required('End time is required')
-    .min(yup.ref('startTime'), 'End time must be after start time'),
-  AuctionDetails: yup.mixed()
+  duration: yup.number().required('Duration is required').min(10, 'Duration must be at least 1').max(400, 'Duration must be at most 400'),
+  auctionPic: yup.array().of(yup.string().url('Invalid URL').required('Auction picture is required')),
+  AuctionDetails: yup.string().required('Auction details is required').max(1000, 'Auction details must be at most 1000 characters'),
 });
 
 const updateAuctionSchema = yup.object({
@@ -19,7 +19,7 @@ const updateAuctionSchema = yup.object({
   startTime: yup.date(),
   endTime: yup.date()
     .min(yup.ref('startTime'), 'End time must be after start time'),
-  AuctionDetails: yup.mixed()
+  AuctionDetails: yup.string().max(1000, 'Auction details must be at most 1000 characters'),
 });
 
 const getAllAuctions = async (req, res) => {
