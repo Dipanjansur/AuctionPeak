@@ -4,18 +4,35 @@ import { fetchItems } from "../Slices/ItemsSlice";
 import { useEffect } from "react";
 
 const VeritalItemCards = () => {
-  const items = useSelector((state) => state.item.Items);
+  const { Items: items, loading } = useSelector((state) => state.item);
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  
+
   useEffect(() => {
     dispatch(fetchItems());
     console.log("Items in VeritalItemCards:", items);
   }, [dispatch]);
 
+  if (!loading && (!items || items.length === 0)) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[300px] w-full mt-8">
+        <p className="text-xl text-gray-600 font-semibold mb-4">
+          No Items available in auction
+        </p>
+        <button
+          onClick={() => navigate("/items/create")}
+          className="px-6 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors duration-200 font-medium shadow-md"
+        >
+          Add items
+        </button>
+      </div>
+    );
+  }
+
   return (
     <ul className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-      {items?.map((item) => {
+
+      {items.items?.map((item) => {
         // 3. Use the 'navigate' function defined outside the map
         return (
           <li
@@ -25,7 +42,7 @@ const VeritalItemCards = () => {
               navigate(`/items/${item.ItemId}`);
             }}
             // Add a group class for the hover effect you defined inside the component
-            className="group cursor-pointer" 
+            className="group cursor-pointer"
           >
             <img
               src="https://images.unsplash.com/photo-1523381210434-271e8be1f52b?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1770&q=80"

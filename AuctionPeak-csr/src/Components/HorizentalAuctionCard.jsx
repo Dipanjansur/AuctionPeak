@@ -1,56 +1,140 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { fetchAuctions } from '../Slices/AuctionSlice'
 import { useNavigate } from 'react-router-dom';
 import { propTypes } from 'prop-types'
 const HorizentalAuctionCard = () => {
   const auctions = useSelector((state) => state.auction.Auctions);
+  // console.log(auctions)
   const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   useEffect(() => {
     dispatch(fetchAuctions());
   }, [dispatch]);
 
   if (!auctions || auctions.length === 0) {
-    return <div>No auctions available</div>;
+    return (
+      <div className="flex flex-col items-center justify-center h-64 text-gray-500">
+        <p className="text-xl font-medium">No auctions available</p>
+      </div>
+    );
   }
-  return <ul>{auctions.map((item) =>
-    <AuctionCard key={item.AuctionId} item={item} />
-  )}
-  </ul>
+
+  return (
+    <div className="container mx-auto px-4 py-8">
+      <div className="flex justify-end mb-8">
+        <button
+          onClick={() => navigate('/auctions/create-auction')}
+          className="bg-black hover:bg-gray-800 text-white font-medium py-2.5 px-5 rounded-full transition-all duration-200 shadow-md flex items-center gap-2"
+        >
+          <span>Create New Auction</span>
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4"></path>
+          </svg>
+        </button>
+      </div>
+
+      <ul className="flex flex-col gap-6" role="list">
+        {auctions.auctions.map((item) =>
+          <AuctionCard key={item.AuctionId} item={item} />
+        )}
+      </ul>
+    </div>
+  );
 };
+
+const UserActionButton = ({ text, color, action }) => {
+  return (<button
+    className={`${color} hover:bg-black text-white text-sm font-semibold py-2 px-4 mx-1 rounded-lg shadow-sm hover:shadow-md transition-all duration-200`}
+    onClick={action}
+  >
+    {text}
+  </button>)
+}
 
 const AuctionCard = ({ item }) => {
   const navigate = useNavigate();
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [isHovered, setIsHovered] = useState(false);
+
+  const activityColor = (active) =>
+    active == 0
+      ? 'bg-gradient-to-tl from-green-300 to-green-500 text-white rounded-xl'
+      : active == 1
+        ? 'bg-gradient-to-tl from-slate-300 to-slate-500 text-white rounded-xl'
+        : 'bg-gradient-to-tl from-red-200 to-red-400 text-white rounded-xl'
+
+  // Normalize auctionPic to an array for the carousel
+  const images = Array.isArray(item?.auctionPic)
+    ? item.auctionPic
+    : (item?.auctionPic ? [item.auctionPic] : []);
+
+  useEffect(() => {
+    let interval;
+    if (images.length > 1 && !isHovered) {
+      interval = setInterval(() => {
+        setCurrentImageIndex((prevIndex) => (prevIndex + 1) % images.length);
+      }, 4000);
+    }
+    return () => clearInterval(interval);
+  }, [images.length, isHovered]);
+
+  const joinButtonAction = (e) => { e.stopPropagation(); }
+  const leaveButtonAction = (e) => { e.stopPropagation(); }
+  const detailsButtonAction = (e) => {
+    e.stopPropagation();
+    navigate(`/auctions/${item.AuctionId}`);
+  }
+
   return (
-    <li className="flex justify-between gap-x-6 p-5" onClick={() => { navigate(`/auctions/${item.AuctionId}`) }}>
-      <div className="flex min-w-0 gap-x-4" >
-        <img className="h-12 w-12 flex-none rounded-full bg-gray-50" src={item?.auctionPic} alt={item?.name} />
-        <div className="min-w-0 flex-auto">
-          <p className="text-sm font-semibold leading-6 text-gray-900">{item?.name}</p>
-          <p className="mt-1 truncate text-xs leading-5 text-gray-500">{item?.AuctionDetails}</p>
-        </div>
-      </div >
-      <div className="hidden shrink-0 sm:flex sm:flex-col sm:items-end">
-        <p className="text-sm leading-6 text-gray-900">role</p>
-        {/* TODO: check if endtime is before then say ended at  or if live give e a  live button and mention ending time */}
-        {true ? (
-          <p className="mt-1 text-xs leading-5 text-gray-500">
-            Last seen <time dateTime={"last name"}>Online</time>
-          </p>
-        ) : (
-          <div className="mt-1 flex items-center gap-x-1.5">
-            <div className="flex-none rounded-full bg-emerald-500/20 p-1">
-              <div className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-            </div>
-            <p className="text-xs leading-5 text-gray-500">ended 2 days before</p>
-          </div>
+    <li
+      className="group bg-white rounded-[20px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-gray-100 overflow-hidden transition-all duration-300 transform hover:-translate-y-1 cursor-pointer flex flex-col sm:flex-row border-4 border-indigo-500"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      {/* Image Section - Left Side */}
+      <figure className="relative w-full sm:w-1/3 md:w-1/4 min-h-[200px] bg-gray-400 hover:bg-gray-600 flex items-center justify-center p-0 overflow-hidden">
+        {images.length > 1 && (
+          <button className='p-1.5 z-10 bg-black/50 hover:bg-black text-white rounded-full absolute left-2 top-1/2 transform -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity' onClick={(e) => { e.stopPropagation(); setCurrentImageIndex((prevIndex) => (prevIndex - 1 + images.length) % images.length) }}>&lt;</button>
         )}
+        <img
+          src={images.length > 0 ? images[currentImageIndex] : ''}
+          alt={item?.name}
+          className="w-full h-full object-cover sm:absolute sm:inset-0"
+        />
+        {images.length > 1 && (
+          <button className='p-1.5 z-10 bg-black/50 hover:bg-black text-white rounded-full absolute right-2 top-1/2 transform -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity' onClick={(e) => { e.stopPropagation(); setCurrentImageIndex((prevIndex) => (prevIndex + 1) % images.length) }}>&gt;</button>
+        )}
+      </figure>
+
+      {/* Content Section - Right Side */}
+      <div className="p-6 flex flex-col flex-grow justify-between">
+        <div>
+          <div className="flex justify-between items-start mb-2">
+            <h2 className="text-xl font-bold text-gray-900 truncate leading-tight">
+              {item?.name}
+            </h2>
+          </div>
+
+          <p className="text-gray-500 text-sm leading-relaxed mb-4 line-clamp-3">
+            {item?.AuctionDetails || "This auction item has no detailed description available."}
+          </p>
+        </div>
+
+        <div className="flex flex-col sm:flex-row justify-between items-end sm:items-center gap-4 mt-auto">
+          <p className={activityColor(item?.active) + " text-center px-4 py-1.5 text-xs font-semibold shadow-sm whitespace-nowrap self-start sm:self-auto"}>
+            {item?.activeTime?.slice(0, 40) + (item?.activeTime?.length > 40 ? "..." : "")}
+          </p>
+          <div className="flex justify-end flex-wrap gap-2">
+            {item.permission.includes("join_auction") && !item.permission.includes("leave_auction") && (<UserActionButton text="Participate" color="bg-gray-600" action={joinButtonAction} />)}
+            {item.permission.includes("leave_auction") && !item.permission.includes("join_auction") && (<UserActionButton text="Leave" color="bg-gray-600" action={leaveButtonAction} />)}
+            {item.permission.includes("leave_auction") && (<UserActionButton text="Details" color="bg-gray-600" action={detailsButtonAction} />)}
+          </div>
+        </div>
       </div>
     </li >
   )
 }
-AuctionCard.propTypes = {
 
-}
 export default HorizentalAuctionCard

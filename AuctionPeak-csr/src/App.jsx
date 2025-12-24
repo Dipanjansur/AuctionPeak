@@ -15,6 +15,7 @@ import ErrorPage from "./Pages/ErrorPage";
 import NotFoundPage from "./Pages/NotFoundPage";
 import AuctionDetails from "./Components/AuctionDetails";
 import ItemDetails from "./Components/ItemDetails";
+import CreateAuction from "./Components/CreateAuction";
 //TODO: make this a context state
 const isloggedIn = true
 export const router = createBrowserRouter([
@@ -34,6 +35,14 @@ export const router = createBrowserRouter([
       {
         path: '/auctions/:auctionId',
         element: <AuctionDetails />
+      },
+      {
+        path: "/auctions/create-auction",
+        element: <CreateAuction />
+      },
+      {
+        path: "/auctions/edit/:id",
+        element: <CreateAuction />
       },
       {
         path: '/items',

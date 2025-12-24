@@ -9,12 +9,12 @@ const initialState = {
 }
 
 export const fetchAuctions = createAsyncThunk("auctions/fetchAll", async () => {
-  const response = await Baseaxios.get('auction');
+  const response = await Baseaxios.get('auctions');
   return response;
 })
 
 export const fetchAuction = createAsyncThunk("auction/fetch", async (Id) => {
-  const response = await Baseaxios.get(`auction/${Id}`);
+  const response = await Baseaxios.get(`auctions/${Id}`);
   return response;
 })
 

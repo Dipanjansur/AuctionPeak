@@ -1,6 +1,4 @@
 import axios from "axios"
-import { useNavigate } from "react-router-dom";
-
 const Baseaxios = axios.create({
   baseURL: 'http://localhost:8080/',
   timeout: 10000, // Set a reasonable timeout value
@@ -12,7 +10,7 @@ Baseaxios.interceptors.request.use(
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     } else {
-     window.location.href = '/login'; // Redirect to login
+      window.location.href = '/login'; // Redirect to login
     }
     return config;
   },
@@ -30,6 +28,9 @@ Baseaxios.interceptors.response.use(
   (error) => {
     // Handle errors
     if (error.response) {
+      if (error.response.status == "401") {
+        window.location.href = '/login';
+      }
       // The request was made and the server responded with a status code that falls out of the range of 2xx
       console.error(`[${error.response.status}] ${error.response.data.message}`);
     } else if (error.request) {
