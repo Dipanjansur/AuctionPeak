@@ -73,9 +73,6 @@ const AuctionCard = ({ item }) => {
   return (
     <li
       className="group w-full max-w-[340px] bg-white rounded-[20px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-gray-100 overflow-hidden transition-all duration-300 transform hover:-translate-y-1 cursor-pointer flex flex-col border-4 border-indigo-500"
-      // onClick={() => { navigate(`/auctions/${item.AuctionId}`) }}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
     >
       {/* Image Section - Lime Background */}
       <ImageCarousel

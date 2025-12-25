@@ -1,10 +1,10 @@
 import { useParams } from 'react-router-dom';
 import { useState, useEffect, useCallback } from 'react';
 import BidForm from './BidForm';
-import Baseaxios from "../utils/axiosConstruct"; 
+import ImageCarousel from "./ImageCarousel";
+import Baseaxios from "../utils/axiosConstruct";
 
 const DEFAULT_PLACEHOLDER_URL = 'https://picsum.photos/400/300';
-const ROTATION_INTERVAL_MS = 20000; 
 
 const ItemDetails = () => {
   let { ItemId } = useParams();
@@ -12,26 +12,19 @@ const ItemDetails = () => {
   const [item, setItem] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
-
-  // --- Image List Setup ---
-  const imageList = [
-    DEFAULT_PLACEHOLDER_URL, 
-    ...(item?.Pics || []) 
-  ].filter((url, index, self) => self.indexOf(url) === index); 
 
   // --- API Fetch Logic ---
   const fetchItemDetails = useCallback(async () => {
     const endpoint = `/items/${ItemId}`;
-    setLoading(true); 
+    setLoading(true);
 
     try {
       const response = await Baseaxios.get(endpoint);
-      setItem(response); 
+      setItem(response);
       setError(null);
     } catch (e) {
       console.error("Fetching item details failed:", e);
-      setError(e.response?.data?.message || e.message); 
+      setError(e.response?.data?.message || e.message);
     } finally {
       setLoading(false);
     }
@@ -43,28 +36,16 @@ const ItemDetails = () => {
     }
   }, [ItemId, fetchItemDetails]);
 
-  // --- Image Rotation Effect ---
-  useEffect(() => {
-    if (imageList.length > 1) {
-      const interval = setInterval(() => {
-        setCurrentImageIndex(prevIndex => 
-          (prevIndex + 1) % imageList.length
-        );
-      }, ROTATION_INTERVAL_MS);
-      return () => clearInterval(interval);
-    }
-  }, [imageList.length]); 
-
   const handleBidSuccess = () => {
-    fetchItemDetails(); 
+    fetchItemDetails();
   };
-    
+
   // --- Conditional Rendering ---
   if (loading) return <div className="flex justify-center items-center h-screen"><p>Loading item details...</p></div>;
   if (error) return <div className="flex justify-center items-center h-screen"><p className="text-red-600">Error: {error}</p></div>;
   if (!item) return <div className="flex justify-center items-center h-screen"><p>No item details found for ID: {ItemId}</p></div>;
 
-  const currentImageUrl = imageList[currentImageIndex];
+
   const bids = item.bids || []; // Ensure bids is an array
 
   // --- Components for Grid ---
@@ -72,42 +53,53 @@ const ItemDetails = () => {
   // 1. Image and Item Details Block (ROW 1)
   const ItemInfoBlock = () => (
     <div className="
-      flex flex-col items-center 
-      bg-white p-6 border border-gray-200 rounded-lg shadow-md 
-      md:flex-row md:max-w-full w-full
+      flex flex-col
+      bg-white border border-gray-200 rounded-lg shadow-md 
+      md:flex-row md:max-w-full w-full overflow-hidden
     ">
-        {/* Image Section */}
-        <img 
-          className="object-cover w-full rounded-lg h-64 md:h-80 md:w-80 mb-4 md:mb-0 md:rounded-l-lg md:rounded-r-none transition-opacity duration-500" 
-          src={currentImageUrl}
-          alt={item.ItemName}
+      {/* Image Section */}
+      <div className="w-full md:w-1/2 h-80 md:h-auto relative bg-gray-100">
+        <ImageCarousel
+          images={item.Pics && item.Pics.length > 0 ? item.Pics : [DEFAULT_PLACEHOLDER_URL]}
+          altText={item.ItemName}
+          heightClass="h-full min-h-[320px]"
+          pauseOnHover={true}
         />
-        
-        {/* Details Section */}
-        <div className="flex flex-col justify-between md:p-6 leading-normal w-full">
-            <h5 className="mb-2 text-3xl font-bold tracking-tight text-gray-900">
-              {item.ItemName}
-            </h5>
-            <p className="mb-4 text-gray-700">
-              {item.ItemDescription}
-            </p>
+      </div>
 
-            {item.Bio && (
-              <div className="mb-4">
-                <p className="text-sm font-semibold text-gray-500">Seller/Item Bio:</p>
-                <p className="text-gray-600 italic">{item.Bio}</p>
-              </div>
-            )}
-            
-            <div className="mb-6">
-                <p className="text-lg text-gray-800">
-                    <strong>Status:</strong> <span className="font-semibold text-blue-600">{item.Status}</span>
-                </p>
-                <p className="text-2xl font-extrabold text-green-700 mt-1">
-                    Current Price: ${item.CurrentPrice ? item.CurrentPrice.toLocaleString() : 'N/A'}
-                </p>
+      {/* Details Section */}
+      <div className="flex flex-col justify-between p-6 md:p-8 leading-normal w-full md:w-1/2">
+        <div>
+          <h5 className="mb-4 text-3xl font-bold tracking-tight text-gray-900">
+            {item.ItemName}
+          </h5>
+          <p className="mb-6 text-gray-700 text-base leading-relaxed">
+            {item.ItemDescription}
+          </p>
+
+          {item.Bio && (
+            <div className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-100">
+              <p className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-1">Seller Bio</p>
+              <p className="text-gray-600 italic">{item.Bio}</p>
             </div>
+          )}
         </div>
+
+        <div className="pt-6 border-t border-gray-100 mt-auto">
+          <div className="flex justify-between items-center mb-2">
+            <p className="text-sm font-medium text-gray-500">Current Status</p>
+            <span className={`px-3 py-1 text-xs font-bold uppercase rounded-full shadow-sm text-white ${item.Status === 'active' ? 'bg-green-500' : 'bg-blue-600'}`}>
+              {item.Status}
+            </span>
+          </div>
+          <div className="flex justify-between items-end">
+            <p className="text-sm font-medium text-gray-500 mb-1">Current Price</p>
+            <p className="text-3xl font-extrabold text-indigo-600">
+              ${item.CurrentPrice ? item.CurrentPrice.toLocaleString() : 'N/A'}
+            </p>
+          </div>
+        </div>
+      </div>
     </div>
   );
 
@@ -158,34 +150,34 @@ const ItemDetails = () => {
   // 3. Create Bid Form (ROW 3)
   const BidFormBlock = () => (
     <div className="mt-8 p-6 bg-white border border-gray-200 rounded-lg shadow-md w-full">
-      <BidForm 
-          ItemId={item.ItemId} 
-          onBidSuccess={handleBidSuccess}
+      <BidForm
+        ItemId={item.ItemId}
+        onBidSuccess={handleBidSuccess}
       />
     </div>
   );
 
   // --- Grid Layout Rendering ---
   return (
-    <div className="flex justify-center p-6"> 
+    <div className="flex justify-center p-6">
       {/* Set the main container as a grid with a maximum width */}
       <div className="grid grid-cols-1 md:max-w-4xl w-full gap-y-6">
-        
+
         {/* ROW 1: Item Image and Details */}
         <div className="col-span-1">
           <ItemInfoBlock />
         </div>
-        
+
         {/* ROW 2: Bids Table */}
         <div className="col-span-1">
           <BidsTable />
         </div>
-        
+
         {/* ROW 3: Bid Form */}
         <div className="col-span-1">
           <BidFormBlock />
         </div>
-        
+
       </div>
     </div>
   );

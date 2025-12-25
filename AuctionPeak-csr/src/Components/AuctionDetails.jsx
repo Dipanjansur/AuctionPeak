@@ -74,14 +74,23 @@ const AuctionDetails = () => {
           </div>
           <h4 className="text-l font-bold text-gray-900 sm:text-3xl">Products for this auction</h4>
         </header>) : (<h1>hello</h1>)}
-      <button className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-l" onClick={() => { buttonClicked("GridCardsLayout") }}>
-        GridLayout
-      </button>
-      <button className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-r" onClick={() => { buttonClicked("HorizentalCardLayout") }}>
-        HorizantalLayout
-      </button>
-      {layout.HorizentalCardLayout && <GridCardsLayout ><GenericCards type="Items_Horizental" data={auctionItemDetails} /></GridCardsLayout>}
-      {layout.GridCardsLayout && <HorizentalCardLayout ><GenericCards type="Items_Vertical" data={auctionItemDetails} /></HorizentalCardLayout>}
+      {auctionItemDetails?.length > 0 ? (
+        <>
+          <button className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-l" onClick={() => { buttonClicked("GridCardsLayout") }}>
+            GridLayout
+          </button>
+          <button className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-r" onClick={() => { buttonClicked("HorizentalCardLayout") }}>
+            HorizantalLayout
+          </button>
+          {layout.HorizentalCardLayout && <GridCardsLayout ><GenericCards type="Items_Horizental" itemsData={auctionItemDetails} /></GridCardsLayout>}
+          {layout.GridCardsLayout && <HorizentalCardLayout ><GenericCards type="Items_Vertical" itemsData={auctionItemDetails} /></HorizentalCardLayout>}
+        </>
+      ) : (
+        <div className="flex flex-col items-center justify-center h-64 text-gray-500">
+          <h1 className="text-xl font-bold text-gray-600 mt-4">No Items present</h1>
+          <button className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-l" onClick={() => { buttonClicked("GridCardsLayout") }}>Add Items</button>
+        </div>
+      )}
     </div>
   )
 }

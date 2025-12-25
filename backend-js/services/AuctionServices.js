@@ -2,7 +2,7 @@ const { v4: uuidv4 } = require("uuid");
 const { Auction, AuctionParticipants } = require("../models/Auctions");
 const Logging = require("../utils/Logger");
 const { Logging_level, Entity, Events, Models } = require("../utils/LoggerParams");
-const { getItemByAuctionId } = require("../Controller/ItemsController");
+const { ItemsService } = require("./ItemsServices");
 const { formatTimeDifference } = require("../utils/timeUtils");
 const globalAuctionPermission = {
     CREATE: "create_auction",
@@ -154,7 +154,7 @@ const getAuctionById = async (auctionId, user, permissions) => {
         return null;
     }
 
-    const auctionItems = await getItemByAuctionId(auctionId, user, permissions);
+    const auctionItems = await ItemsService.getItemByAuctionId(auctionId, user, permissions);
     auction.dataValues.items = auctionItems;
     Logging(
         Logging_level.info,

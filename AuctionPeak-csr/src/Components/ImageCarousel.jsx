@@ -1,14 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 
 const ImageCarousel = ({
     images = [],
     altText = 'Image',
     heightClass = 'h-64',
     backgroundColor = 'bg-gray-400 hover:bg-gray-600',
-    textSettings = ''
+    textSettings = '',
 }) => {
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
-    const [isHovered, setIsHovered] = useState(false);
+    const [isHovered, setIsHovered] = useState(false)
 
     // Normalize images input
     const validImages = Array.isArray(images)
@@ -20,7 +20,7 @@ const ImageCarousel = ({
         if (validImages.length > 1 && !isHovered) {
             interval = setInterval(() => {
                 setCurrentImageIndex((prevIndex) => (prevIndex + 1) % validImages.length);
-            }, 4000);
+            }, 1000);
         }
         return () => clearInterval(interval);
     }, [validImages.length, isHovered]);

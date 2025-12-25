@@ -3,6 +3,7 @@ import { useSelector, useDispatch } from 'react-redux'
 import { fetchAuctions } from '../Slices/AuctionSlice'
 import { useNavigate } from 'react-router-dom';
 import { propTypes } from 'prop-types'
+import ImageCarousel from './ImageCarousel';
 const HorizentalAuctionCard = () => {
   const auctions = useSelector((state) => state.auction.Auctions);
   // console.log(auctions)
@@ -55,8 +56,6 @@ const UserActionButton = ({ text, color, action }) => {
 
 const AuctionCard = ({ item }) => {
   const navigate = useNavigate();
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [isHovered, setIsHovered] = useState(false);
 
   const activityColor = (active) =>
     active == 0
@@ -64,21 +63,6 @@ const AuctionCard = ({ item }) => {
       : active == 1
         ? 'bg-gradient-to-tl from-slate-300 to-slate-500 text-white rounded-xl'
         : 'bg-gradient-to-tl from-red-200 to-red-400 text-white rounded-xl'
-
-  // Normalize auctionPic to an array for the carousel
-  const images = Array.isArray(item?.auctionPic)
-    ? item.auctionPic
-    : (item?.auctionPic ? [item.auctionPic] : []);
-
-  useEffect(() => {
-    let interval;
-    if (images.length > 1 && !isHovered) {
-      interval = setInterval(() => {
-        setCurrentImageIndex((prevIndex) => (prevIndex + 1) % images.length);
-      }, 4000);
-    }
-    return () => clearInterval(interval);
-  }, [images.length, isHovered]);
 
   const joinButtonAction = (e) => { e.stopPropagation(); }
   const leaveButtonAction = (e) => { e.stopPropagation(); }
@@ -90,23 +74,16 @@ const AuctionCard = ({ item }) => {
   return (
     <li
       className="group bg-white rounded-[20px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-gray-100 overflow-hidden transition-all duration-300 transform hover:-translate-y-1 cursor-pointer flex flex-col sm:flex-row border-4 border-indigo-500"
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
     >
       {/* Image Section - Left Side */}
-      <figure className="relative w-full sm:w-1/3 md:w-1/4 min-h-[200px] bg-gray-400 hover:bg-gray-600 flex items-center justify-center p-0 overflow-hidden">
-        {images.length > 1 && (
-          <button className='p-1.5 z-10 bg-black/50 hover:bg-black text-white rounded-full absolute left-2 top-1/2 transform -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity' onClick={(e) => { e.stopPropagation(); setCurrentImageIndex((prevIndex) => (prevIndex - 1 + images.length) % images.length) }}>&lt;</button>
-        )}
-        <img
-          src={images.length > 0 ? images[currentImageIndex] : ''}
-          alt={item?.name}
-          className="w-full h-full object-cover sm:absolute sm:inset-0"
+      {/* Image Section - Left Side */}
+      <div className="w-full sm:w-1/3 md:w-1/4 min-h-[200px]">
+        <ImageCarousel
+          images={item?.auctionPic}
+          altText={item?.name}
+          heightClass="h-full min-h-[200px]"
         />
-        {images.length > 1 && (
-          <button className='p-1.5 z-10 bg-black/50 hover:bg-black text-white rounded-full absolute right-2 top-1/2 transform -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity' onClick={(e) => { e.stopPropagation(); setCurrentImageIndex((prevIndex) => (prevIndex + 1) % images.length) }}>&gt;</button>
-        )}
-      </figure>
+      </div>
 
       {/* Content Section - Right Side */}
       <div className="p-6 flex flex-col flex-grow justify-between">

@@ -7,7 +7,8 @@ import { fetchItems } from "../Slices/ItemsSlice";
 
 const ItemsPage = () => {
   const items = useSelector((state) => state.item.Items);
-  const itemsList = items.message
+  const itemsList = items.items
+
   const dispatch = useDispatch();
   useEffect(() => {
     dispatch(fetchItems())
@@ -31,8 +32,8 @@ const ItemsPage = () => {
           HorizantalLayout
         </button>
       </div>
-      {layout.GridCardsLayout && <GridCardsLayout ><GenericCards type="Items_Horizental" data={itemsList} /></GridCardsLayout>}
-      {layout.HorizentalCardLayout && <HorizentalCardLayout ><GenericCards type="Items_Vertical" data={itemsList} /></HorizentalCardLayout>}
+      {layout.GridCardsLayout && <GridCardsLayout ><GenericCards type="Items_Horizental" itemsData={itemsList} /></GridCardsLayout>}
+      {layout.HorizentalCardLayout && <HorizentalCardLayout ><GenericCards type="Items_Vertical" itemsData={itemsList} /></HorizentalCardLayout>}
     </>
   );
 }
