@@ -2,7 +2,7 @@ const { v4: uuidv4 } = require("uuid");
 const { Auction, AuctionParticipants } = require("../models/Auctions");
 const Logging = require("../utils/Logger");
 const { Logging_level, Entity, Events, Models } = require("../utils/LoggerParams");
-const { ItemsService } = require("./ItemsServices");
+const ItemsService = require("./ItemsService");
 const { formatTimeDifference } = require("../utils/timeUtils");
 const globalAuctionPermission = {
     CREATE: "create_auction",
@@ -58,7 +58,7 @@ const attachItemPermissions = async (auction, user, permissions) => {
             new Set(
                 [
                     ...(isOwner ? Object.values(PERMISSIONS) : []),
-                    permissions.has(PERMISSIONS.ADMIN_ACCESS) && ["all_auction", "add_items"],
+                    ...(permissions.has(PERMISSIONS.ADMIN_ACCESS) ? ["all_auction", "add_items"] : []),
                     (permissions.has(PERMISSIONS.UPDATE_GLOBAL) ||
                         permissions.has(PERMISSIONS.UPDATE_AUCTION)) &&
                     "update_auction",
@@ -140,9 +140,6 @@ const getAuctionById = async (auctionId, user, permissions) => {
 
     };
     let auction = await Auction.findOne(auction_query);
-    const permission = await attachItemPermissions(auction, user, permissions)
-    const active = markActivity(auction)
-
     if (!auction) {
         Logging(
             Logging_level.warn,
@@ -153,6 +150,9 @@ const getAuctionById = async (auctionId, user, permissions) => {
         );
         return null;
     }
+    const permission = await attachItemPermissions(auction, user, permissions)
+    const active = markActivity(auction)
+
 
     const auctionItems = await ItemsService.getItemByAuctionId(auctionId, user, permissions);
     auction.dataValues.items = auctionItems;
@@ -169,7 +169,7 @@ const getAuctionById = async (auctionId, user, permissions) => {
 
 const createAuction = async (user, permissions, payload) => {
     // 1. Capability Check
-    const canCreate = permissions.includes(PERMISSIONS.CREATE) || permissions.includes(PERMISSIONS.ADMIN_ACCESS);
+    const canCreate = permissions.has(globalAuctionPermission.CREATE) || permissions.has(PERMISSIONS.ADMIN_ACCESS);
 
     if (!canCreate) {
         Logging(

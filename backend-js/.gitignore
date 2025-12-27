@@ -1,0 +1,22 @@
+# Dependencies
+node_modules
+
+# Test
+coverage
+
+# Editor
+.idea
+.vscode
+
+# Logs
+logs
+
+# Environment
+.env
+
+# Build
+build
+
+# Other
+.DS_Store
+Thumbs.db

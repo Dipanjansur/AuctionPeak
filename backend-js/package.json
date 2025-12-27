@@ -2,10 +2,10 @@
   "name": "auction-peak",
   "version": "1.0.0",
   "description": "backend REST api for next gen auction API",
-  "main": "App.js",
+  "main": "src/App.js",
   "scripts": {
-    "start": "node --env-file=.env App.js ",
-    "dev_run": "node --env-file=.env --watch App.js",
+    "start": "node --env-file=src/.env src/App.js ",
+    "dev_run": "node --env-file=src/.env --watch src/App.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
@@ -23,6 +23,8 @@
     "yup": "^1.7.1"
   },
   "devDependencies": {
-    "sequelize-cli": "^6.6.2"
+    "jest": "^30.2.0",
+    "sequelize-cli": "^6.6.2",
+    "supertest": "^7.1.4"
   }
 }

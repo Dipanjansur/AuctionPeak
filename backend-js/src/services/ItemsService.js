@@ -186,7 +186,7 @@ const getItemById = async (ItemId, user, permissions) => {
 
 const createNewItem = async (user, permissions, payload) => {
     const canCreate =
-        permissions.has(PERMISSIONS.CREATE) ||
+        permissions.has(globalPermission.CREATE) ||
         permissions.has(PERMISSIONS.ADMIN_ACCESS);
 
     if (!canCreate) {
