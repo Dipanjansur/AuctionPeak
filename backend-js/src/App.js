@@ -42,7 +42,6 @@ app.use('/items', ItemsRouter)
 app.use('/statics', StaticPageRouter)
 app.use('/bids', BidsRouter)
 //Global error handler
-//Global error handler
 app.use(ErrorHandler);
 
 app.listen(port, async () => {
@@ -62,3 +61,5 @@ app.listen(port, async () => {
 
   Logging(Logging_level.info, Entity.SERVER, Events.SERVER_ACTIVITIES, `server running at ${port}`);
 });
+
+module.exports = app;
