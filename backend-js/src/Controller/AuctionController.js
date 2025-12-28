@@ -21,6 +21,10 @@ const updateAuctionSchema = yup.object({
     .min(yup.ref('startTime'), 'End time must be after start time'),
   AuctionDetails: yup.string().max(1000, 'Auction details must be at most 1000 characters'),
 });
+const registerorUnregisterAuctionSchema = yup.object({
+  auctionId: yup.string().required('Auction ID is required'),
+});
+
 
 const getAllAuctions = async (req, res) => {
   const { user, permissions } = req;
@@ -111,10 +115,47 @@ const deleteAuction = async (req, res) => {
   return res.status(200).json({ message: "Auction deleted successfully" });
 };
 
+const registerAuction = async (req, res) => {
+  const { auctionId } = req.body;
+  const { user, permissions } = req;
+  try {
+    await registerorUnregisterAuctionSchema.validate(req.body, { abortEarly: false });
+  } catch (validationError) {
+    throw new ValidationError(validationError.errors.join(', '));
+  }
+  if (!auctionId) {
+    throw new BadRequestError("Auction ID is required");
+  }
+
+  const success = await AuctionService.registerAuction(auctionId, user, permissions);
+
+  return res.status(200).json({ message: "Auction registered successfully" });
+};
+
+const unregisterAuction = async (req, res) => {
+  const { auctionId } = req.body;
+  const { user, permissions } = req;
+  try {
+    await registerorUnregisterAuctionSchema.validate(req.body, { abortEarly: false });
+  } catch (validationError) {
+    throw new ValidationError(validationError.errors.join(', '));
+  }
+
+  if (!auctionId) {
+    throw new BadRequestError("Auction ID is required");
+  }
+
+  const success = await AuctionService.unregisterAuction(auctionId, user, permissions);
+
+  return res.status(200).json({ message: "Auction unregistered successfully" });
+};
+
 module.exports = {
   getAllAuctions,
   getAuctionById,
   createNewAuction,
   updateAuctionData,
-  deleteAuction
+  deleteAuction,
+  registerAuction,
+  unregisterAuction
 };

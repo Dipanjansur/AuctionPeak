@@ -103,10 +103,26 @@ const deleteBids = async (req, res) => {
   return res.status(200).json({ message: "Bid deleted successfully" });
 };
 
+const bidsUpdate = async (req, res) => {
+  const { interests } = req.query;
+  let interestsArray = [];
+
+  if (interests) {
+    if (Array.isArray(interests)) {
+      interestsArray = interests;
+    } else {
+      interestsArray = interests.split(',').map(i => i.trim());
+    }
+  }
+
+  BidsService.registerClient(req, res, interestsArray);
+};
+
 module.exports = {
   getAllBids,
   getBidsById,
   createNewBids,
   updateBids,
   deleteBids,
+  bidsUpdate
 };

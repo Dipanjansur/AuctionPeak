@@ -5,6 +5,43 @@ const { v4: uuidv4 } = require("uuid");
 const Logging = require("../utils/Logger");
 const { Logging_level, Entity, Events, Models } = require("../utils/LoggerParams");
 
+let clients = [];
+
+const registerClient = (req, res, interests) => {
+    const { user, permissions } = req;
+    const headers = {
+        'Content-Type': 'text/event-stream',
+        'Connection': 'keep-alive',
+        'Cache-Control': 'no-cache',
+        'X-Accel-Buffering': 'no'
+    };
+    res.writeHead(200, headers);
+
+    const clientId = user.userId;
+    const newClient = {
+        id: clientId,
+        res,
+        interests
+    };
+    clients.push(newClient);
+    const data = `data: ${JSON.stringify({ type: 'connected', clientId })}\n\n`;
+    res.write(data);
+
+    req.on('close', () => {
+        console.log(`${clientId} Connection closed`);
+        clients = clients.filter(client => client.id !== clientId);
+    });
+};
+
+const notifyClients = (bid) => {
+    clients.forEach(client => {
+        if (client.interests.includes(bid.itemId)) {
+            const data = `data: ${JSON.stringify({ type: 'bid_update', currentPrice: bid.amount, bidder: bid.userId })}\n\n`;
+            client.res.write(data);
+        }
+    });
+};
+
 const PERMISSIONS = {
     ADMIN_ACCESS: "all_bids",
     VIEW_BASIC: "view_bids",
@@ -122,23 +159,12 @@ const createNewBid = async (user, permissions, payload) => {
         throw new Error("Item not found");
     }
 
-    // console.log("ItemDetails", ItemDetails.dataValues);
-    // console.log("user", user);
-
     const createdBid = await Bids.create({
         BidsId: uuidv4(),
         amount: amount,
-        userId: user.userId, // Using user.userId based on controller logic, though controller used user.dataValues.usersId vs user.userId inconsistently. 
-        // Looking at getReadScope/getWriteScope in controller it used user.userId.
-        // AuctionService used user.userId. 
-        // Check BidsController createNewBids: userId: user.dataValues.usersId.
-        // But getReadScope used user.userId.
-        // I will stick to user.userId assuming the user object has it or it's a proxy.
-        // Wait, BidsController L149 says `user.dataValues.usersId`. 
-        // L29 says `user.userId`.
-        // I'll try to be safe. If user.userId exists use it, else try dataValues.
+        userId: user.userId,
         itemId: ItemId,
-        auctionId: ItemDetails.auctionId, // Accessing directly assuming sequelize object behavior or dataValues
+        auctionId: ItemDetails.auctionId,
     });
 
     Logging(
@@ -148,6 +174,7 @@ const createNewBid = async (user, permissions, payload) => {
         `Created bid ${createdBid.BidsId}`,
         Models.Bids
     );
+    notifyClients(createdBid);
 
     return createdBid;
 };
@@ -167,9 +194,12 @@ const updateBid = async (BidsId, user, permissions, updates) => {
         bid.amount = updates.amount;
     }
 
-    await bid.save();
 
-    return attachItemPermissions(bid, user, permissions);
+    await bid.save();
+    const result = { ...attachItemPermissions(bid, user, permissions) };
+    notifyClients(result);
+
+    return result;
 };
 
 const deleteBid = async (BidsId, user, permissions) => {
@@ -200,4 +230,5 @@ module.exports = {
     createNewBid,
     updateBid,
     deleteBid,
+    registerClient
 };

@@ -62,7 +62,7 @@ const ErrorHandler = (err, req, res, next) => {
         loggingLevel,
         Entity.Middleware || "MW",
         eventType,
-        `Req: ${req.method} ${req.url} - Msg: ${message}`,
+        `Req: ${req.method} ${req.url} - Msg: ${message} -stack: ${err.stack}`,
         "ErrorHandler"
     );
 

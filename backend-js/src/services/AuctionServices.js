@@ -4,6 +4,7 @@ const Logging = require("../utils/Logger");
 const { Logging_level, Entity, Events, Models } = require("../utils/LoggerParams");
 const ItemsService = require("./ItemsService");
 const { formatTimeDifference } = require("../utils/timeUtils");
+const BadRequestError = require("../customerror/BadRequest");
 const globalAuctionPermission = {
     CREATE: "create_auction",
 }
@@ -263,10 +264,52 @@ const deleteAuction = async (auctionId, user, permissions) => {
     return true;
 };
 
+const registerAuction = async (auctionId, user, permissions) => {
+    const scope = getReadScope(user, permissions);
+    const auction = await Auction.findOne({
+        where: {
+            AuctionId: auctionId,
+            ...scope
+        }
+    })
+
+    if (!auction || auction.endTime < Date.now()) {
+        throw new BadRequestError("Invalid auction ID or auction has ended");
+    }
+
+    await AuctionParticipants.save({
+        auctionId: auctionId.AuctionId,
+        userUsersId: user.usersId
+    });
+
+}
+const unregisterAuction = async (auctionId, user, permissions) => {
+    const scope = getReadScope(user, permissions);
+    const auction = await Auction.findOne({
+        where: {
+            AuctionId: auctionId,
+            ...scope
+        }
+    })
+
+    if (!auction || auction.endTime < Date.now()) {
+        throw new BadRequestError("Invalid auction ID or auction has ended");
+    }
+
+    await AuctionParticipants.destroy({
+        where: {
+            auctionId: auctionId.AuctionId,
+            userUsersId: user.usersId
+        }
+    });
+}
+
 module.exports = {
     getAllAuctions,
     getAuctionById,
     createAuction,
     updateAuction,
     deleteAuction,
+    registerAuction,
+    unregisterAuction
 };
